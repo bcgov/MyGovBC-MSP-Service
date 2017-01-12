@@ -1,0 +1,24 @@
+{
+  "name": "mygovbc-msp-service",
+  "version": "0.2.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bcgov/MyGovBC-MSP-Service.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/bcgov/MyGovBC-MSP-Service/issues"
+  },
+  "homepage": "https://github.com/bcgov/MyGovBC-MSP-Service#readme",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "http-proxy": "^1.16.2"
+  }
+}
