@@ -15,6 +15,6 @@ httpProxy.createProxyServer({
     headers: {
         host: 't2mspde.maximusbc.ca'
     }
-}).listen(9080);
+}).listen(8080);
 
-console.log('https proxy server started on port 9080'.green.bold);
+console.log('https proxy server started on port 8080'.green.bold);
