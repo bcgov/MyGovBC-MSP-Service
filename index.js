@@ -10,11 +10,13 @@ var https = require('https'),
 // Create a HTTP Proxy server with a HTTPS target
 //
 var proxy = httpProxy.createProxyServer({
-    target: 'https://t2mspde.maximusbc.ca',
+    target: process.env.TARGET_URL,
     agent  : https.globalAgent,
+    secure: true,
     headers: {
-        host: 't2mspde.maximusbc.ca'
-    }
+        host: process.env.TARGET_HEADER_HOST
+    },
+    auth: process.env.TARGET_USERNAME_PASSWORD
 }).listen(8080);
 
 //
