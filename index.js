@@ -17,6 +17,14 @@ var proxy = httpProxy.createProxyServer({
     }
 }).listen(8080);
 
+//
+// Listen for the `proxyRes` event on `proxy`.
+//
+proxy.on('proxyRes', function (proxyRes, req, res) {
+    // Allow all origins: TODO: remove this when proxied by nginx
+    proxyRes.headers["Access-Control-Allow-Origin"] = "*";
+});
+
 // Listen for the `error` event on `proxy`.
 proxy.on('error', function (err, req, res) {
     console.log("err: ", err);
