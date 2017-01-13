@@ -23,8 +23,9 @@ var proxy = httpProxy.createProxyServer({
 // Listen for the `proxyRes` event on `proxy`.
 //
 proxy.on('proxyRes', function (proxyRes, req, res) {
-    // Allow all origins: TODO: remove this when proxied by nginx
+    // CORS: TODO: remove this when proxied by nginx
     proxyRes.headers["Access-Control-Allow-Origin"] = "*";
+    proxyRes.headers["Access-Control-Allow-Headers"] = "Content-Type";
 });
 
 // Listen for the `error` event on `proxy`.
