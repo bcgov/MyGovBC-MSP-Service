@@ -33,7 +33,7 @@ proxy.on('error', function (err, req, res) {
 });
 // Listen for the `proxyReq` event on `proxy`.
 proxy.on('proxyReq', function (err, req, res) {
-    console.log("", req.method, req.headers.host, req.url);
+    console.log("", req.method, req.headers.host, req.url, res.statusCode);
 });
 
 console.log('https proxy server started on port 8080'.green.bold);
