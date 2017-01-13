@@ -9,12 +9,21 @@ var https = require('https'),
 //
 // Create a HTTP Proxy server with a HTTPS target
 //
-httpProxy.createProxyServer({
+var proxy = httpProxy.createProxyServer({
     target: 'https://t2mspde.maximusbc.ca',
     agent  : https.globalAgent,
     headers: {
         host: 't2mspde.maximusbc.ca'
     }
 }).listen(8080);
+
+// Listen for the `error` event on `proxy`.
+proxy.on('error', function (err, req, res) {
+    console.log("err: ", err);
+});
+// Listen for the `proxyReq` event on `proxy`.
+proxy.on('proxyReq', function (err, req, res) {
+    console.log("", req.method, req.headers.host, req.url);
+});
 
 console.log('https proxy server started on port 8080'.green.bold);
