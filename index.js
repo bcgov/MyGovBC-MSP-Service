@@ -22,13 +22,13 @@ var proxy = httpProxy.createProxyServer({
 //
 // Listen for the `proxyRes` event on `proxy`.
 //
-/*
-proxy.on('proxyRes', function (proxyRes, req, res) {
-    // CORS: not for deployments
-    proxyRes.headers["Access-Control-Allow-Origin"] = "*";
-    proxyRes.headers["Access-Control-Allow-Headers"] = "Content-Type";
-});
-*/
+if (process.env.CORS_ORIGIN) {
+    proxy.on('proxyRes', function (proxyRes, req, res) {
+        proxyRes.headers["Access-Control-Allow-Origin"] = process.env.CORS_ORIGIN;
+        proxyRes.headers["Access-Control-Allow-Headers"] = "Content-Type";
+    });
+}
+
 
 // Listen for the `error` event on `proxy`.
 proxy.on('error', function (err, req, res) {
