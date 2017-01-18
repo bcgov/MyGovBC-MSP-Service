@@ -22,7 +22,8 @@ var proxy = httpProxy.createProxyServer({
 //
 // Listen for the `proxyRes` event on `proxy`.
 //
-if (process.env.CORS_ORIGIN) {
+if (process.env.CORS_ORIGIN &&
+    process.env.CORS_ORIGIN.length > 0) {
     proxy.on('proxyRes', function (proxyRes, req, res) {
         proxyRes.headers["Access-Control-Allow-Origin"] = process.env.CORS_ORIGIN;
         proxyRes.headers["Access-Control-Allow-Headers"] = "Content-Type";
