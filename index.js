@@ -6,12 +6,22 @@ var https = require('https'),
     colors = require('colors'),
     httpProxy = require('http-proxy');
 
+// Create new HTTPS.Agent for mutual TLS purposes
+if (process.env.MUTUAL_TLS_PFX_BASE64 &&
+    process.env.MUTUAL_TLS_PFX_BASE64.length > 0) {
+    var httpsAgentOptions = {
+        pfx: process.env.MUTUAL_TLS_PFX_BASE64
+    };
+
+
+    var myAgent = new https.Agent(httpsAgentOptions);
+}
 //
 // Create a HTTP Proxy server with a HTTPS target
 //
 var proxy = httpProxy.createProxyServer({
     target: process.env.TARGET_URL,
-    agent  : https.globalAgent,
+    agent  : myAgent || https.globalAgent,
     secure: true,
     headers: {
         host: process.env.TARGET_HEADER_HOST
