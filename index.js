@@ -10,7 +10,7 @@ var https = require('https'),
 if (process.env.MUTUAL_TLS_PFX_BASE64 &&
     process.env.MUTUAL_TLS_PFX_BASE64.length > 0) {
     var httpsAgentOptions = {
-        pfx: process.env.MUTUAL_TLS_PFX_BASE64,
+        pfx: new Buffer(process.env.MUTUAL_TLS_PFX_BASE64, 'base64'),
         passphrase: process.env.MUTUAL_TLS_PFX_PASSWORD
     };
 
