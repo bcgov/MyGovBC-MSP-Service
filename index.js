@@ -7,8 +7,8 @@ var https = require('https'),
     httpProxy = require('http-proxy');
 
 // Create new HTTPS.Agent for mutual TLS purposes
-if (process.env.MUTUAL_TLS_PFX_BASE64 &&
-    process.env.MUTUAL_TLS_PFX_BASE64.length > 0) {
+if (process.env.MUTUAL_TLS_PEM_KEY_BASE64 &&
+    process.env.MUTUAL_TLS_PEM_KEY_BASE64.length > 0) {
     var httpsAgentOptions = {
         key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
         passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
