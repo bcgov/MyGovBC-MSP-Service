@@ -13,7 +13,7 @@ if (process.env.MUTUAL_TLS_PEM_KEY_BASE64 &&
         key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
         passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
         cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64'),
-        ca: new Buffer(process.env.MUTUAL_TLS_PEM_CA, 'base64'),
+        //ca: new Buffer(process.env.MUTUAL_TLS_PEM_CA, 'base64'),
     };
 
     var myAgent = new https.Agent(httpsAgentOptions);
