@@ -11,9 +11,9 @@ if (process.env.MUTUAL_TLS_PFX_BASE64 &&
     process.env.MUTUAL_TLS_PFX_BASE64.length > 0) {
     var httpsAgentOptions = {
         pfx: new Buffer(process.env.MUTUAL_TLS_PFX_BASE64, 'base64'),
-        passphrase: process.env.MUTUAL_TLS_PFX_PASSWORD
+        passphrase: process.env.MUTUAL_TLS_PFX_PASSWORD,
+        ca: new Buffer(process.env.MUTUAL_TLS_CA_CER_BASE64, 'base64'),
     };
-
 
     var myAgent = new https.Agent(httpsAgentOptions);
 }
