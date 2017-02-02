@@ -4,7 +4,8 @@ var https = require('https'),
     path  = require('path'),
     fs    = require('fs'),
     colors = require('colors'),
-    httpProxy = require('http-proxy');
+    httpProxy = require('http-proxy'),
+    rootCas = require('ssl-root-cas/latest').create();
 
 // Create new HTTPS.Agent for mutual TLS purposes
 if (process.env.MUTUAL_TLS_PEM_KEY_BASE64 &&
@@ -13,7 +14,7 @@ if (process.env.MUTUAL_TLS_PEM_KEY_BASE64 &&
         key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
         passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
         cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64'),
-        ca: new Buffer(process.env.MUTUAL_TLS_PEM_CA, 'base64'),
+        ca: rootCas,
     };
 
     var myAgent = new https.Agent(httpsAgentOptions);
