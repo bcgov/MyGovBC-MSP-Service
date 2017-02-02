@@ -14,7 +14,7 @@ if (process.env.MUTUAL_TLS_PEM_KEY_BASE64 &&
         key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
         passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
         cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64'),
-        ca: rootCas,
+        //ca: rootCas,
     };
 
     var myAgent = new https.Agent(httpsAgentOptions);
@@ -25,7 +25,7 @@ if (process.env.MUTUAL_TLS_PEM_KEY_BASE64 &&
 var proxy = httpProxy.createProxyServer({
     target: process.env.TARGET_URL,
     agent  : myAgent || https.globalAgent,
-    secure: true,
+    secure: false,
     headers: {
         host: process.env.TARGET_HEADER_HOST
     },
