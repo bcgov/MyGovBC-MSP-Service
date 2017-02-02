@@ -25,7 +25,7 @@ if (process.env.MUTUAL_TLS_PEM_KEY_BASE64 &&
 var proxy = httpProxy.createProxyServer({
     target: process.env.TARGET_URL,
     agent  : myAgent || https.globalAgent,
-    secure: false,
+    secure: true,
     headers: {
         host: process.env.TARGET_HEADER_HOST
     },
