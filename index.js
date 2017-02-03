@@ -4,8 +4,7 @@ var https = require('https'),
     path  = require('path'),
     fs    = require('fs'),
     colors = require('colors'),
-    httpProxy = require('http-proxy'),
-    rootCas = require('ssl-root-cas/latest').create();
+    httpProxy = require('http-proxy')
 
 // Create new HTTPS.Agent for mutual TLS purposes
 if (process.env.MUTUAL_TLS_PEM_KEY_BASE64 &&
