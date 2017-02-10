@@ -27,4 +27,5 @@ CORS_ORIGIN | Optional, if using CORS supply use domain name of the allowed orig
 MUTUAL_TLS_PEM_KEY_BASE64 | A base64 encoded PEM key string
 MUTUAL_TLS_PEM_KEY_PASSPHRASE | The passphrase for the above PEM key
 MUTUAL_TLS_PEM_CERT | The client certificate for the above KEY in a base64 encoded PEM format
-SECURE_MODE | Always `true` unless you are debugging
+SECURE_MODE | Insecure mode allows untrusted targets.  Always `true` unless you are debugging
+USE_MUTUAL_TLS | Turns on and off Mutual TLS to target.  Always `true` unless you are debugging
