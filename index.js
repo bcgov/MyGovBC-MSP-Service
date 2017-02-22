@@ -4,7 +4,18 @@ var https = require('https'),
     path  = require('path'),
     fs    = require('fs'),
     colors = require('colors'),
+    winston = require('winston'),
+    os = require('os'),
     httpProxy = require('http-proxy')
+
+if(process.env.LOGSTASH_PORT){
+  require('winston-logstash')
+  winston.add(winston.transports.Logstash, {
+    port: process.env.LOGSTASH_PORT,
+    node_name: os.hostname(),
+    host: 'logstash'
+  })
+}
 
 // Create new HTTPS.Agent for mutual TLS purposes
 if (process.env.USE_MUTUAL_TLS &&
@@ -45,11 +56,11 @@ if (process.env.CORS_ORIGIN &&
 
 // Listen for the `error` event on `proxy`.
 proxy.on('error', function (err, req, res) {
-    console.log("err: ", err);
+    winston.info("err: ", err);
 });
 // Listen for the `proxyReq` event on `proxy`.
 proxy.on('proxyReq', function (err, req, res) {
-    console.log("", req.method, req.headers.host, req.url, res.statusCode);
+    winston.info("", req.method, req.headers.host, req.url, res.statusCode);
 });
 
-console.log('https proxy server started on port 8080'.green.bold);
+winston.info('https proxy server started on port 8080'.green.bold);
