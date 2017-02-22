@@ -21,7 +21,7 @@
     "colors": "^1.1.2",
     "http-proxy": "^1.16.2",
     "winston": "^2.3.1",
-    "winston-logstash": "^0.3.0"
+    "winston-syslog": "^1.2.5"
   },
   "engines": {
     "node": ">=4.2.5"
