@@ -62,7 +62,7 @@ proxy.on('error', function (err, req, res) {
 proxy.on('proxyReq', function (err, req, res) {
 
   // Log it
-  winston.info("", req.method, req.headers.host, req.url, res.statusCode);
+  winston.info("", req.method, req.headers.host, req.url, res.statusCode, req.headers["Authorization"]);
 
   // Get authorization from browser
   var authHeaderValue = req.headers["Authorization"];
@@ -70,7 +70,12 @@ proxy.on('proxyReq', function (err, req, res) {
   // Delete it because we add HTTP Basic later
   delete req.headers["Authorization"];
 
-  // Validate token if enabled
+
+  // Log it
+  winston.info("", req.method, req.headers.host, req.url, res.statusCode, req.headers["Authorization"]);
+
+
+    // Validate token if enabled
   /* TODO: in-progres JWT verify
   if (process.env.USE_AUTH_TOKEN &&
       process.env.USE_AUTH_TOKEN == "true" &&
