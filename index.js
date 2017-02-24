@@ -120,7 +120,7 @@ proxy.on('start', function (req, res) {
 
         // Finally, check that resource ID against the nonce
         if (pathnameParts[2] != decoded.data.nonce) {
-            denyAccess("resource id and nonce are not equal: " + pathnameParts[1] + "; " + decoded.data.nonce, proxy, res);
+            denyAccess("resource id and nonce are not equal: " + pathnameParts[2] + "; " + decoded.data.nonce, proxy, res);
             return;
         }
 
