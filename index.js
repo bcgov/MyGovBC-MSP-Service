@@ -5,7 +5,8 @@ var https = require('https'),
   fs = require('fs'),
   colors = require('colors'),
   winston = require('winston'),
-  httpProxy = require('http-proxy')
+  httpProxy = require('http-proxy'),
+  jwt = require('jsonwebtoken');
 
 if (process.env.SYSLOG_PORT) {
   require('winston-syslog').Syslog
@@ -23,8 +24,7 @@ if (process.env.USE_MUTUAL_TLS &&
   var httpsAgentOptions = {
     key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
     passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
-    cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64'),
-    //ca: rootCas,
+    cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64')
   };
 
   var myAgent = new https.Agent(httpsAgentOptions);
@@ -60,7 +60,30 @@ proxy.on('error', function (err, req, res) {
 });
 // Listen for the `proxyReq` event on `proxy`.
 proxy.on('proxyReq', function (err, req, res) {
+
+  // Log it
   winston.info("", req.method, req.headers.host, req.url, res.statusCode);
+
+  // Get authorization from browser
+  var authHeaderValue = req.headers["Authorization"];
+
+  // Delete it because we add HTTP Basic later
+  delete req.headers["Authorization"];
+
+  // Validate token if enabled
+  /* TODO: in-progres JWT verify
+  if (process.env.USE_AUTH_TOKEN &&
+      process.env.USE_AUTH_TOKEN == "true" &&
+      process.env.AUTH_TOKEN_KEY &&
+      process.env.AUTH_TOKEN_KEY.length > 0) {
+
+
+    if (!authHeaderValue) {
+      winston.error("missing Authorization header - access denied.");
+    }
+    //jwt.verify(token, secretOrPublicKey, [options]);
+  }
+  */
 });
 
 winston.info('https proxy server started on port 8080'.green.bold);
