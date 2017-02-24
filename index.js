@@ -58,8 +58,8 @@ if (process.env.CORS_ORIGIN &&
 proxy.on('error', function (err, req, res) {
   winston.info("err: ", err);
 });
-// Listen for the `proxyReq` event on `proxy`.
-proxy.on('proxyReq', function (err, req, res) {
+// Listen for the `start` event on `proxy`.
+proxy.on('start', function (req, res) {
 
   // Log it
   winston.info("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers.authorization);
