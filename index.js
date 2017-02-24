@@ -62,17 +62,17 @@ proxy.on('error', function (err, req, res) {
 proxy.on('proxyReq', function (err, req, res) {
 
   // Log it
-  winston.info("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["Authorization"]);
+  winston.info("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers.authorization);
 
   // Get authorization from browser
-  var authHeaderValue = req.headers["Authorization"];
+  var authHeaderValue = req.headers.authorization;
 
   // Delete it because we add HTTP Basic later
-  delete req.headers["Authorization"];
+  delete req.headers.authorization;
 
 
   // Log it
-  winston.info("incoming post-authz: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["Authorization"]);
+  winston.info("incoming post-authz: ", req.method, req.headers.host, req.url, res.statusCode, req.headers.authorization);
 
 
     // Validate token if enabled
