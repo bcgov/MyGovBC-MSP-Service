@@ -112,15 +112,21 @@ proxy.on('start', function (req, res) {
         var pathname = url.parse(req.url).pathname;
         var pathnameParts = pathname.split("/");
 
-        if (!pathnameParts ||
-            pathnameParts.length < 3) {
-            denyAccess("missing resource id", proxy, res);
+        // find the noun(s)
+        var nounIndex = pathnameParts.indexOf("MSPDESubmitAttachment");
+        if (nounIndex < 0) {
+            nounIndex = pathnameParts.indexOf("MSPDESubmitApplication");
+        }
+
+        if (nounIndex < 0 ||
+            pathnameParts.length < nounIndex + 2) {
+            denyAccess("missing noun or resource id", proxy, res);
             return;
         }
 
         // Finally, check that resource ID against the nonce
-        if (pathnameParts[2] != decoded.data.nonce) {
-            denyAccess("resource id and nonce are not equal: " + pathnameParts[2] + "; " + decoded.data.nonce, proxy, res);
+        if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
+            denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, proxy, res);
             return;
         }
 
