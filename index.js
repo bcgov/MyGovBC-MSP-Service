@@ -7,7 +7,8 @@ var https = require('https'),
     winston = require('winston'),
     httpProxy = require('http-proxy'),
     jwt = require('jsonwebtoken'),
-    url = require('url');
+    url = require('url'),
+    stringify = require('json-stringify-safe');
 
 if (process.env.SYSLOG_PORT) {
     require('winston-syslog').Syslog
@@ -82,7 +83,7 @@ proxy.on('start', function (req, res) {
 
         // Ensure we have a value
         if (!authHeaderValue) {
-            denyAccess("missing header", proxy, res);
+            denyAccess("missing header", proxy, res, req);
             return;
         }
 
@@ -94,7 +95,7 @@ proxy.on('start', function (req, res) {
             // Decode token
             decoded = jwt.verify(token, process.env.AUTH_TOKEN_KEY);
         } catch (err) {
-            denyAccess("jwt unverifiable", proxy, res);
+            denyAccess("jwt unverifiable", proxy, res, req);
             return;
         }
 
@@ -102,7 +103,7 @@ proxy.on('start', function (req, res) {
         if (decoded == null ||
             decoded.data.nonce == null ||
             decoded.data.nonce.length < 1) {
-            denyAccess("missing nonce", proxy, res);
+            denyAccess("missing nonce", proxy, res, req);
             return;
         }
 
@@ -120,7 +121,7 @@ proxy.on('start', function (req, res) {
 
         if (nounIndex < 0 ||
             pathnameParts.length < nounIndex + 2) {
-            denyAccess("missing noun or resource id", proxy, res);
+            denyAccess("missing noun or resource id", proxy, res, req);
             return;
         }
 
@@ -136,9 +137,9 @@ proxy.on('start', function (req, res) {
     }
 });
 
-function denyAccess(message, proxy, res) {
+function denyAccess(message, proxy, res, req) {
 
-    winston.error(message, +" - access denied.");
+    winston.error(message + " - access denied.  request: " + stringify(req));
 
     // Hook
     proxy.on('proxyReq', function (proxyReq, req, res, options) {
