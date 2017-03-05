@@ -5,10 +5,26 @@ var https = require('https'),
     fs = require('fs'),
     colors = require('colors'),
     winston = require('winston'),
-    httpProxy = require('http-proxy'),
     jwt = require('jsonwebtoken'),
     url = require('url'),
-    stringify = require('json-stringify-safe');
+    stringify = require('json-stringify-safe'),
+    express = require('express'),
+    proxy = require('http-proxy-middleware');
+
+
+// verbose replacement
+function logProvider(provider) {
+    var logger = winston;
+
+    var myCustomProvider = {
+        log: logger.log,
+        debug: logger.debug,
+        info: logger.info,
+        warn: logger.warn,
+        error: logger.error
+    }
+    return myCustomProvider;
+}
 
 if (process.env.SYSLOG_PORT) {
     require('winston-syslog').Syslog
@@ -20,52 +36,15 @@ if (process.env.SYSLOG_PORT) {
     })
 }
 
-// Create new HTTPS.Agent for mutual TLS purposes
-if (process.env.USE_MUTUAL_TLS &&
-    process.env.USE_MUTUAL_TLS == "true") {
-    var httpsAgentOptions = {
-        key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
-        passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
-        cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64')
-    };
-
-    var myAgent = new https.Agent(httpsAgentOptions);
-}
 //
-// Create a HTTP Proxy server with a HTTPS target
+// Init express
 //
-var proxy = httpProxy.createProxyServer({
-    target: process.env.TARGET_URL || "http://localhost:3000",
-    agent: myAgent || http.globalAgent,
-    secure: process.env.SECURE_MODE || false,
-    headers: {
-        host: process.env.TARGET_HEADER_HOST || "localhost",
-    },
-    auth: process.env.TARGET_USERNAME_PASSWORD || "username:password"
-}).listen(8080);
+var app = express();
 
 //
-// Listen for the `proxyRes` event on `proxy`.
+// CAPTCHA Authorization, ALWAYS first
 //
-if (process.env.CORS_ORIGIN &&
-    process.env.CORS_ORIGIN.length > 0) {
-    proxy.on('proxyRes', function (proxyRes, req, res) {
-        proxyRes.headers["Access-Control-Allow-Origin"] = process.env.CORS_ORIGIN;
-        proxyRes.headers["Access-Control-Allow-Headers"] = "Content-Type";
-    });
-}
-
-
-// Listen for the `error` event on `proxy`.
-proxy.on('error', function (err, req, res) {
-    winston.info("err: ", err);
-    res.writeHead(500);
-    res.end();
-});
-
-// Listen for the `start` event on `proxy`.
-proxy.on('start', function (req, res) {
-
+app.use('/', function (req, res, next) {
     // Log it
     winston.info("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers.authorization);
 
@@ -83,7 +62,7 @@ proxy.on('start', function (req, res) {
 
         // Ensure we have a value
         if (!authHeaderValue) {
-            denyAccess("missing header", proxy, res, req);
+            denyAccess("missing header", res, req);
             return;
         }
 
@@ -95,7 +74,7 @@ proxy.on('start', function (req, res) {
             // Decode token
             decoded = jwt.verify(token, process.env.AUTH_TOKEN_KEY);
         } catch (err) {
-            denyAccess("jwt unverifiable", proxy, res, req);
+            denyAccess("jwt unverifiable", res, req);
             return;
         }
 
@@ -103,7 +82,7 @@ proxy.on('start', function (req, res) {
         if (decoded == null ||
             decoded.data.nonce == null ||
             decoded.data.nonce.length < 1) {
-            denyAccess("missing nonce", proxy, res, req);
+            denyAccess("missing nonce", res, req);
             return;
         }
 
@@ -121,34 +100,72 @@ proxy.on('start', function (req, res) {
 
         if (nounIndex < 0 ||
             pathnameParts.length < nounIndex + 2) {
-            denyAccess("missing noun or resource id", proxy, res, req);
+            denyAccess("missing noun or resource id", res, req);
             return;
         }
 
         // Finally, check that resource ID against the nonce
         if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
-            denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, proxy, res);
+            denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res);
             return;
         }
 
-        // OK its valid let it pass thru this event
-
-
+        // Check for CORS config
+        if (process.env.CORS_ORIGIN &&
+            process.env.CORS_ORIGIN.length > 0) {
+            res.headers["Access-Control-Allow-Origin"] = process.env.CORS_ORIGIN;
+            res.headers["Access-Control-Allow-Headers"] = "Content-Type";
+        }
     }
+    // OK its valid let it pass thru this event
+    next(); // pass control to the next handler
 });
 
-function denyAccess(message, proxy, res, req) {
+
+// Create new HTTPS.Agent for mutual TLS purposes
+if (process.env.USE_MUTUAL_TLS &&
+    process.env.USE_MUTUAL_TLS == "true") {
+    var httpsAgentOptions = {
+        key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
+        passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
+        cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64')
+    };
+
+    var myAgent = new https.Agent(httpsAgentOptions);
+}
+//
+// Create a HTTP Proxy server with a HTTPS target
+//
+var proxy = proxy({
+    target: process.env.TARGET_URL || "http://localhost:3000",
+    agent: myAgent || http.globalAgent,
+    secure: process.env.SECURE_MODE || false,
+    changeOrigin: true,
+    auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
+    logLevel: 'debug',
+    logProvider: logProvider
+});
+
+// Add in proxy AFTER authorization
+app.use('/', proxy);
+
+// Start express
+app.listen(8080);
+
+
+/**
+ * General deny access handler
+ * @param message
+ * @param res
+ * @param req
+ */
+function denyAccess(message, res, req) {
 
     winston.error(message + " - access denied.  request: " + stringify(req));
 
-    // Hook
-    proxy.on('proxyReq', function (proxyReq, req, res, options) {
-
-        // Abort the outbound proxy request
-        proxyReq.abort();
-    });
     res.writeHead(401);
     res.end();
 }
+
 
 winston.info('https proxy server started on port 8080'.green.bold);
