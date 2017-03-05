@@ -109,13 +109,6 @@ app.use('/', function (req, res, next) {
             denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res);
             return;
         }
-
-        // Check for CORS config
-        if (process.env.CORS_ORIGIN &&
-            process.env.CORS_ORIGIN.length > 0) {
-            res.headers["Access-Control-Allow-Origin"] = process.env.CORS_ORIGIN;
-            res.headers["Access-Control-Allow-Headers"] = "Content-Type";
-        }
     }
     // OK its valid let it pass thru this event
     next(); // pass control to the next handler
