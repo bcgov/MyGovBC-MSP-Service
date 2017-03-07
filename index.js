@@ -132,6 +132,7 @@ var proxy = proxy({
     target: process.env.TARGET_URL || "http://localhost:3000",
     agent: myAgent || http.globalAgent,
     secure: process.env.SECURE_MODE || false,
+    keepAlive: false,
     changeOrigin: true,
     auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
     logLevel: 'debug',
