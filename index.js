@@ -11,7 +11,6 @@ var https = require('https'),
     express = require('express'),
     proxy = require('http-proxy-middleware');
 
-
 // verbose replacement
 function logProvider(provider) {
     var logger = winston;
@@ -46,13 +45,13 @@ var app = express();
 //
 app.use('/', function (req, res, next) {
     // Log it
-    winston.info("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers.authorization);
+    winston.info("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
 
     // Get authorization from browser
-    var authHeaderValue = req.headers.authorization;
+    var authHeaderValue = req.headers["x-authorization"];
 
     // Delete it because we add HTTP Basic later
-    delete req.headers.authorization;
+    delete req.headers["x-authorization"];
 
     // Validate token if enabled
     if (process.env.USE_AUTH_TOKEN &&
