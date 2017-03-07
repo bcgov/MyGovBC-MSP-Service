@@ -36,6 +36,19 @@ if (process.env.SYSLOG_PORT) {
 }
 
 //
+// Generate token for monitoring apps
+//
+if (process.env.USE_AUTH_TOKEN &&
+    process.env.USE_AUTH_TOKEN == "true" &&
+    process.env.AUTH_TOKEN_KEY &&
+    process.env.AUTH_TOKEN_KEY.length > 0) {
+
+    var monitoringToken = jwt.sign({
+        data: {nonce: "status"}
+    }, process.env.AUTH_TOKEN_KEY);
+    winston.info("Monitoring token: " + monitoringToken);
+}
+//
 // Init express
 //
 var app = express();
