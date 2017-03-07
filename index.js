@@ -135,7 +135,36 @@ var proxy = proxy({
     changeOrigin: true,
     auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
     logLevel: 'debug',
-    logProvider: logProvider
+    logProvider: logProvider,
+
+    //
+    // Listen for the `error` event on `proxy`.
+    //
+    onError: function (err, req, res) {
+        winston.error("proxy error: " + err + "; req.url: " + req.url);
+        res.writeHead(500, {
+            'Content-Type': 'text/plain'
+        });
+
+        res.end('Error with proxy');
+    },
+
+
+    //
+    // Listen for the `proxyRes` event on `proxy`.
+    //
+    onProxyRes: function (proxyRes, req, res) {
+        winston.info('RAW Response from the target', stringify(proxyRes.headers));
+    },
+
+    //
+    // Listen for the `proxyReq` event on `proxy`.
+    //
+    onProxyReq: function(proxyReq, req, res, options) {
+        //winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
+        winston.info('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
+        //winston.info('RAW options: ', stringify(options));
+    }
 });
 
 // Add in proxy AFTER authorization
