@@ -53,6 +53,9 @@ app.use('/', function (req, res, next) {
     // Delete it because we add HTTP Basic later
     delete req.headers["x-authorization"];
 
+    // Delete any attempts at cookies
+    delete req.headers["cookie"];
+
     // Validate token if enabled
     if (process.env.USE_AUTH_TOKEN &&
         process.env.USE_AUTH_TOKEN == "true" &&
@@ -132,7 +135,7 @@ var proxy = proxy({
     target: process.env.TARGET_URL || "http://localhost:3000",
     agent: myAgent || http.globalAgent,
     secure: process.env.SECURE_MODE || false,
-    keepAlive: false,
+    keepAlive: true,
     changeOrigin: true,
     auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
     logLevel: 'debug',
@@ -155,7 +158,12 @@ var proxy = proxy({
     // Listen for the `proxyRes` event on `proxy`.
     //
     onProxyRes: function (proxyRes, req, res) {
-        winston.info('RAW Response from the target: ' + stringify(proxyRes.headers)+ "; status: " + res.statusCode);
+        winston.info('RAW Response from the target: ' + stringify(proxyRes.headers));
+
+        // Delete set-cookie
+        delete proxyRes.headers["set-cookie"];
+
+        winston.info('RAW Response back to client: ' + stringify(res.headers));
     },
 
     //
