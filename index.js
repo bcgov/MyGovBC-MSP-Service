@@ -141,7 +141,7 @@ var proxy = proxy({
     // Listen for the `error` event on `proxy`.
     //
     onError: function (err, req, res) {
-        winston.error("proxy error: " + err + "; req.url: " + req.url);
+        winston.error("proxy error: " + err + "; req.url: " + req.url + "; status: " + res.statusCode);
         res.writeHead(500, {
             'Content-Type': 'text/plain'
         });
@@ -154,7 +154,7 @@ var proxy = proxy({
     // Listen for the `proxyRes` event on `proxy`.
     //
     onProxyRes: function (proxyRes, req, res) {
-        winston.info('RAW Response from the target', stringify(proxyRes.headers));
+        winston.info('RAW Response from the target: ' + stringify(proxyRes.headers)+ "; status: " + res.statusCode);
     },
 
     //
@@ -182,7 +182,7 @@ app.listen(8080);
  */
 function denyAccess(message, res, req) {
 
-    winston.error(message + " - access denied.  request: " + stringify(req));
+    winston.error(message + " - access denied.  request: " + stringify(req.headers));
 
     res.writeHead(401);
     res.end();
