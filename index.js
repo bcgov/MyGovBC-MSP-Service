@@ -175,8 +175,6 @@ var proxy = proxy({
 
         // Delete set-cookie
         delete proxyRes.headers["set-cookie"];
-
-        winston.info('RAW Response back to client: ' + stringify(res.headers));
     },
 
     //
