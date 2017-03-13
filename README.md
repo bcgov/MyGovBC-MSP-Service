@@ -29,4 +29,24 @@ MUTUAL_TLS_PEM_KEY_PASSPHRASE | The passphrase for the above PEM key
 MUTUAL_TLS_PEM_CERT | The client certificate for the above KEY in a base64 encoded PEM format
 SECURE_MODE | Insecure mode allows untrusted targets.  Always `true` unless you are debugging
 USE_MUTUAL_TLS | Turns on and off Mutual TLS to target.  Always `true` unless you are debugging
-LOGSTASH_PORT | Optional, the port of LOGSTASH for winston logging. 
+LOGSTASH_PORT | Optional, the port of LOGSTASH for winston logging.
+ 
+## Crypo Tips
+_Requires OpenSSL CLI installed on workstation_
+
+If you want to extract private key from a pfx file and write it to PEM file
+
+```
+openssl.exe pkcs12 -in publicAndprivate.pfx -nocerts -out privateKey.pem
+```
+If you want to extract the certificate file (the signed public key) from the pfx file
+```
+openssl.exe pkcs12 -in publicAndprivate.pfx -clcerts -nokeys -out publicCert.pem
+```
+If you want to base64encode a file, i.e., like the PEMs above:
+```
+cd <Root of MyGovBC-MSP-Service>
+node ./base64encode.js <filename> 
+```
+
+Add these to the OpenShift env vars, do NOT save any certificates to GitHub.
