@@ -53,6 +53,11 @@ if (process.env.USE_AUTH_TOKEN &&
 //
 var app = express();
 
+// Add status endpoint
+app.get('/status', function (req, res) {
+    res.send("OK");
+});
+
 //
 // CAPTCHA Authorization, ALWAYS first
 //
@@ -207,6 +212,7 @@ function denyAccess(message, res, req) {
     res.writeHead(401);
     res.end();
 }
+
 
 
 winston.info('https proxy server started on port 8080'.green.bold);

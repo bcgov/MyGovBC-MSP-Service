@@ -50,3 +50,9 @@ node ./base64encode.js <filename>
 ```
 
 Add these to the OpenShift env vars, do NOT save any certificates to GitHub.
+
+To ensure the target's mutual SSL/TLS is configured correctly, try this command:
+
+```
+openssl s_client -showcerts -connect <servername>:<port> -servername <servername>
+```
