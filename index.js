@@ -126,7 +126,7 @@ app.use('/', function (req, res, next) {
 
         // Finally, check that resource ID against the nonce
         if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
-            denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res);
+            denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
             return;
         }
     }
