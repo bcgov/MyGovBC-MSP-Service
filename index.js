@@ -94,6 +94,7 @@ app.use('/', function (req, res, next) {
             // Decode token
             decoded = jwt.verify(token, process.env.AUTH_TOKEN_KEY);
         } catch (err) {
+            winston.error("jwt verify failed, x-authorization: " + authHeaderValue);
             denyAccess("jwt unverifiable", res, req);
             return;
         }
