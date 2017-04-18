@@ -56,3 +56,6 @@ To ensure the target's mutual SSL/TLS is configured correctly, try this command:
 ```
 openssl s_client -showcerts -connect <servername>:<port> -servername <servername>
 ```
+
+## Production Setup
+See [Deploy to OpenShift](openshift/README.md) docs.
