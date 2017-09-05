@@ -7,9 +7,9 @@ node('master') {
 	 
 	stage('build') {
 	 echo "Building..."
-	 openshiftBuild bldCfg: "msp-service", showBuildLogs: 'true'
-	 openshiftTag destStream: "msp-service", verbose: 'true', destTag: '$BUILD_ID', srcStream: "msp-service", srcTag: 'latest'
-	 openshiftTag destStream: "msp-service", verbose: 'true', destTag: 'dev', srcStream: "msp-service", srcTag: 'latest'
+	 openshiftBuild bldCfg: "mygovbc-msp-service", showBuildLogs: 'true'
+	 openshiftTag destStream: "mygovbc-msp-service", verbose: 'true', destTag: '$BUILD_ID', srcStream: "mygovbc-msp-service", srcTag: 'latest'
+	 openshiftTag destStream: "mygovbc-msp-service", verbose: 'true', destTag: 'dev', srcStream: "mygovbc-msp-service", srcTag: 'latest'
     }
 }
 
@@ -18,14 +18,14 @@ stage('deploy-test') {
   input "Deploy to test?"
   
   node('master'){
-     openshiftTag destStream: 'msp-service', verbose: 'true', destTag: 'test', srcStream: 'msp-service', srcTag: '$BUILD_ID'
+     openshiftTag destStream: 'mygovbc-msp-service', verbose: 'true', destTag: 'test', srcStream: 'mygovbc-msp-service', srcTag: '$BUILD_ID'
   }
 }
 
 stage('deploy-prod') {
   input "Deploy to prod?"
   node('master'){
-     openshiftTag destStream: 'msp-service', verbose: 'true', destTag: 'prod', srcStream: 'msp-service', srcTag: '$BUILD_ID'
+     openshiftTag destStream: 'mygovbc-msp-service', verbose: 'true', destTag: 'prod', srcStream: 'mygovbc-msp-service', srcTag: '$BUILD_ID'
   }
   
 }

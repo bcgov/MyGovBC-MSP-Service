@@ -134,7 +134,7 @@
       "displayName": "Application Name",
       "description": "The name given to the application",
       "required": true,
-      "value": "msp-service"
+      "value": "mygovbc-msp-service"
     },
     {
       "name": "DEPLOYMENT_TYPE",
