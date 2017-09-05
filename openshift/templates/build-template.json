@@ -20,10 +20,10 @@
     "kind": "BuildConfig",
     "apiVersion": "v1",
     "metadata": {
-        "name": "mygovbc-msp-service",
+        "name": "${APPLICATION_NAME}",
         "creationTimestamp": null,
         "labels": {
-            "app": "mygovbc-msp-service"
+            "app": "${APPLICATION_NAME}"
         },
         "annotations": {
             "openshift.io/generated-by": "OpenShiftWebConsole"
@@ -134,7 +134,7 @@
       "displayName": "Application Name",
       "description": "The name given to the application",
       "required": true,
-      "value": "mygovbc-msp-service"
+      "value": "msp-service"
     },
     {
       "name": "DEPLOYMENT_TYPE",
