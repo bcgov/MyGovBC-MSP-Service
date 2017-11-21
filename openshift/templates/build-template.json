@@ -15,7 +15,14 @@
   {
     "template": "nmp-build"
   },
-  "objects": [ 
+  "objects": [
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${APPLICATION_NAME}"
+      }
+    },
 {
     "kind": "BuildConfig",
     "apiVersion": "v1",
@@ -102,7 +109,7 @@
             "template": "${APPLICATION_NAME}-pipeline"
         }
     },
-    "spec": {        
+    "spec": {
         "runPolicy": "Parallel",
         "source": {
             "type": "Git",
@@ -149,7 +156,7 @@
       "description": "The source repository to use for the builds.",
       "required": true,
       "value": "https://github.com/bcgov/MyGovBC-MSP-Service.git"
-    },	
+    },
     {
       "name": "GIT_REFERENCE",
       "displayName": "Git Reference",
