@@ -5,7 +5,6 @@ metadata:
   namespace: gcpe-mygovbc-msp-dev
   selfLink: /oapi/v1/namespaces/gcpe-mygovbc-msp-dev/deploymentconfigs/mygovbc-msp-service
   uid: 4eb4e424-d912-11e6-89a5-0050568379a2
-  resourceVersion: '33902668'
   generation: 11
   creationTimestamp: '2017-01-12T21:58:53Z'
   labels:
