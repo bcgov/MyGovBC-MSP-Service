@@ -28,7 +28,7 @@ function logProvider(provider) {
 if (process.env.SYSLOG_PORT) {
     require('winston-syslog').Syslog
     winston.add(winston.transports.Syslog, {
-        host: 'logstash',
+        host: process.env.SYSLOG_HOST,
         port: process.env.SYSLOG_PORT,
         protocol: 'udp4',
         localhost: require('os').hostname()
