@@ -9,6 +9,7 @@ var https = require('https'),
     url = require('url'),
     stringify = require('json-stringify-safe'),
     express = require('express'),
+    request = require('request'),
     proxy = require('http-proxy-middleware');
 
 // verbose replacement
@@ -20,20 +21,14 @@ function logProvider(provider) {
         debug: logger.debug,
         info: logger.info,
         warn: logger.warn,
-        error: logger.error
+        error: logError
     }
     return myCustomProvider;
 }
 
-if (process.env.SYSLOG_PORT) {
-    require('winston-syslog').Syslog
-    winston.add(winston.transports.Syslog, {
-        host: 'logstash',
-        port: process.env.SYSLOG_PORT,
-        protocol: 'udp4',
-        localhost: require('os').hostname()
-    })
-}
+winston.add(winston.transports.Console, {
+    timestamp: true
+});
 
 //
 // Generate token for monitoring apps
@@ -48,6 +43,7 @@ if (process.env.USE_AUTH_TOKEN &&
     }, process.env.AUTH_TOKEN_KEY);
     winston.info("Monitoring token: " + monitoringToken);
 }
+
 //
 // Init express
 //
@@ -94,7 +90,7 @@ app.use('/', function (req, res, next) {
             // Decode token
             decoded = jwt.verify(token, process.env.AUTH_TOKEN_KEY);
         } catch (err) {
-            winston.error("jwt verify failed, x-authorization: " + authHeaderValue + "; err: " + err);
+            logError("jwt verify failed, x-authorization: " + authHeaderValue + "; err: " + err);
             denyAccess("jwt unverifiable", res, req);
             return;
         }
@@ -164,7 +160,7 @@ var proxy = proxy({
     // Listen for the `error` event on `proxy`.
     //
     onError: function (err, req, res) {
-        winston.error("proxy error: " + err + "; req.url: " + req.url + "; status: " + res.statusCode);
+        logError("proxy error: " + err + "; req.url: " + req.url + "; status: " + res.statusCode);
         res.writeHead(500, {
             'Content-Type': 'text/plain'
         });
@@ -208,12 +204,31 @@ app.listen(8080);
  */
 function denyAccess(message, res, req) {
 
-    winston.error(message + " - access denied.  request: " + stringify(req.headers));
+    logError(message + " - access denied.  request: " + stringify(req.headers));
 
     res.writeHead(401);
     res.end();
 }
 
+function logError (message) {
+
+    // log locally
+    winston.error(message);
+
+    // send to splunk server
+    var options = {
+        url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT,
+        headers: {
+            'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN
+        }
+    };
+    function callback(err, resp, body) {
+        if (!error && response.statusCode == 200) {
+            winston.error ("ERROR: " + body);
+        }
+    }
+    return request(options, callback);
+}
 
 
-winston.info('https proxy server started on port 8080'.green.bold);
+logError('MyGovBC-MSP-Service server started on port 8080'.green.bold);
