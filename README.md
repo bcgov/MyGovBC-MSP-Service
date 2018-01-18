@@ -29,9 +29,14 @@ MUTUAL_TLS_PEM_KEY_PASSPHRASE | The passphrase for the above PEM key
 MUTUAL_TLS_PEM_CERT | The client certificate for the above KEY in a base64 encoded PEM format
 SECURE_MODE | Insecure mode allows untrusted targets.  Always `true` unless you are debugging
 USE_MUTUAL_TLS | Turns on and off Mutual TLS to target.  Always `true` unless you are debugging
-LOGSTASH_PORT | Optional, the port of LOGSTASH for winston logging.
- 
-## Crypo Tips
+AUTH_TOKEN_KEY | Authentication Key used in all SSL
+USE_AUTH_TOKEN | Use Auth Token in all SSL
+LOGGER_HOST | Host name for the Splunk Forwarder
+LOGGER_PORT | Port for the Splunk Forwarder
+SPLUNK_AUTH_TOKEN | Authorization token required to use the splunk server
+
+
+## Crypto Tips
 _Requires OpenSSL CLI installed on workstation_
 
 If you want to extract private key from a pfx file and write it to PEM file
