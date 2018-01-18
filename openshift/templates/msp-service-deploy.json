@@ -81,8 +81,8 @@
                     "value": "${TARGET_USERNAME_PASSWORD}"
                   },
                   {
-                    "name": "UTUAL_TLS_PEM_KEY_BASE64",
-                    "value": "${UTUAL_TLS_PEM_KEY_BASE64}"
+                    "name": "MUTUAL_TLS_PEM_KEY_BASE64",
+                    "value": "${MUTUAL_TLS_PEM_KEY_BASE64}"
                   },
                   {
                     "name": "MUTUAL_TLS_PEM_KEY_PASSPHRASE",
@@ -101,11 +101,11 @@
                     "value": "${USE_MUTUAL_TLS}"
                   },
                   {
-                    "name": "AUTH_TOKEN_KEY"
+                    "name": "AUTH_TOKEN_KEY",
                     "value": "${AUTH_TOKEN_KEY}"
                   },
                   {
-                    "name": "USE_AUTH_TOKEN"
+                    "name": "USE_AUTH_TOKEN",
                     "value": "${USE_AUTH_TOKEN}"
                   },
                   {
