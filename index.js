@@ -217,7 +217,7 @@ function logError (message) {
 
     // send to splunk server
     var options = {
-        url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT,
+        url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT + '/log',
         headers: {
             'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN
         }
