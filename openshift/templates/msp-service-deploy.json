@@ -65,12 +65,6 @@
                     "protocol": "TCP"
                   }
                 ],
-		"volumeMounts": [
-		  {
-		    "mountPath": "/var/logs",
-		    "name": "splunk-local-log"
-		  }
-		],
                 "env": [
                   {
                     "name": "TARGET_URL",
@@ -133,14 +127,6 @@
                 }
               }
             ],
-	    "volumes": [
-	      {
-	        "name": "splunk-local-log",
-	        "persistentVolumeClaim": {
-		  "claimName": "splunk-local-log"
-	        }
-              }
-	    ],
             "dnsPolicy": "ClusterFirst",
             "restartPolicy": "Always",
             "securityContext": {
@@ -242,7 +228,7 @@
       "description": "The exposed hostname that will route to the service, e.g., myappname.pathfinder.gov.bc.ca, if left blank a value will be defaulted.",
       "displayName": "Application Hostname",
       "name": "APPLICATION_DOMAIN",
-      "value": "gcpe-mygovbc-splunk-forwader-dev.pathfinder.gov.bc.ca"
+      "value": "gcpe-mygovbc-msp-service-dev.pathfinder.gov.bc.ca"
     },
 
     {
