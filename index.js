@@ -26,9 +26,9 @@ function logProvider(provider) {
     return myCustomProvider;
 }
 
-winston.add(winston.transports.Console, {
-    timestamp: true
-});
+// winston.add(winston.transports.Console, {
+//    timestamp: true
+// });
 
 //
 // Generate token for monitoring apps
