@@ -213,10 +213,7 @@ function logError (message) {
 
     // log locally
     winston.info(message);
-    
-    var postData = {
-        'msg' : message,
-    }
+
 
     var options = {
         hostname: process.env.LOGGER_HOST,
@@ -226,11 +223,11 @@ function logError (message) {
         headers: {
             'Content-Type': 'application/text',
             'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN,
-            'Content-Length': Buffer.byteLength(postData)
+            'Content-Length': Buffer.byteLength(message)
         }
     };
 
-    winston.info("OPTIONS: " + JSON.stringify(options), "\nPOSTDATA: " + JSON.stringify(postData));
+    winston.info("OPTIONS: " + JSON.stringify(options), "\nREQUEST BODY: " + JSON.stringify(message));
 
     var req = http.request(options, function (res) {
         console.log("STATUS: " + res.statusCode);
@@ -249,7 +246,7 @@ function logError (message) {
     });
 
     // write data to request body
-    req.write(postData);
+    req.write(message);
     req.end();
 }
 
