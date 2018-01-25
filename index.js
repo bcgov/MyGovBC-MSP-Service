@@ -228,7 +228,7 @@ function logError (message) {
             winston.error ("ERROR: " + body);
         }
 
-        winston.info("Splunk-forwarder response:" + resp, "\nBody: " + JSON.stringify(body), "\nRequest Options: " + JSON.stringify(options));
+        winston.info("Splunk-forwarder response:" + resp, "\nBody: " + JSON.stringify(body), "\nErr: " + JSON.stringify(err),"\nRequest Options: " + JSON.stringify(options));
     }
     return request.post(options, callback);
 }
