@@ -221,14 +221,14 @@ function logError (message) {
         headers: {
             'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN
         },
-        body: {message :  message}
+        body: message
     };
     function callback(err, resp, body) {
         if (!err && response.statusCode == 200) {
             winston.error ("ERROR: " + body);
         }
 
-        winston.info("Splunk-forwarder response " + resp, "\nBody: " + JSON.stringify(body));
+        winston.info("Splunk-forwarder response:" + resp, "\nBody: " + JSON.stringify(body), "\nRequest Options: " + JSON.stringify(options));
     }
     return request.post(options, callback);
 }
