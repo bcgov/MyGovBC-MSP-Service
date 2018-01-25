@@ -220,15 +220,35 @@ function logError (message) {
         url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT + '/log',
         headers: {
             'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN
-        }
+        },
+        body: {message :  message}
     };
     function callback(err, resp, body) {
         if (!err && response.statusCode == 200) {
             winston.error ("ERROR: " + body);
         }
     }
-    return request(options, callback);
+    return request.post(options, callback);
 }
 
+// log the startup
+winston.info('MyGovBC-MSP-Service server started on port 8080');
 
-logError('MyGovBC-MSP-Service server started on port 8080'.green.bold);
+// send to splunk server
+var options = {
+    url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT + '/log',
+    headers: {
+        'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN
+    }
+};
+
+function callback(err, resp, body) {
+    if (!err && response.statusCode == 200) {
+        winston.error ("ERROR: " + body);
+    }
+}
+request.post(options, callback);
+
+
+
+logError('MyGovBC-MSP-Service server started on port 8080');
