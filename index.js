@@ -214,6 +214,10 @@ function logError (message) {
     // log locally
     winston.info(message);
 
+    var body = JSON.stringify({
+        message: message
+    })
+
 
     var options = {
         hostname: process.env.LOGGER_HOST,
@@ -223,7 +227,7 @@ function logError (message) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN,
-            'Content-Length': Buffer.byteLength(message),
+            'Content-Length': Buffer.byteLength(body),
             'logsource' : process.env.HOSTNAME,
             'timestamp' : Date.now(),
             'program' : 'msp-service',
@@ -231,7 +235,7 @@ function logError (message) {
         }
     };
 
-    winston.info("OPTIONS: " + JSON.stringify(options), "\nREQUEST BODY: " + JSON.stringify(message));
+    winston.info("OPTIONS: " + JSON.stringify(options), "\nREQUEST BODY: " + JSON.stringify(body));
 
     var req = http.request(options, function (res) {
         console.log("STATUS: " + res.statusCode);
@@ -250,7 +254,7 @@ function logError (message) {
     });
 
     // write data to request body
-    req.write({message: message});
+    req.write(JSON.stringify({message: body}));
     req.end();
 }
 
