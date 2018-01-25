@@ -228,10 +228,10 @@ function logError (message) {
             'Content-Type': 'application/json',
             'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN,
             'Content-Length': Buffer.byteLength(body),
-            'logsource' : process.env.HOSTNAME,
-            'timestamp' : Date.now(),
-            'program' : 'msp-service',
-            'serverity' : 'error'
+            'logsource': process.env.HOSTNAME,
+            'timestamp': Date.now(),
+            'program': 'msp-service',
+            'serverity': 'error'
         }
     };
 
@@ -254,7 +254,7 @@ function logError (message) {
     });
 
     // write data to request body
-    req.write(JSON.stringify({message: body}));
+    req.write(body);
     req.end();
 }
 
