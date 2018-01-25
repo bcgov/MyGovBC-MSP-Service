@@ -215,7 +215,6 @@ function logError (message) {
     // log locally
     winston.info(message);
 
-    /*
     // send to splunk server
     var options = {
         url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT + '/log',
@@ -225,14 +224,16 @@ function logError (message) {
         body: message
     };
     function callback(err, resp, body) {
+
+        winston.info("In callback");
         if (!err && response.statusCode == 200) {
             winston.error ("ERROR: " + body);
         }
 
         winston.info("Splunk-forwarder response:" + resp, "\nBody: " + JSON.stringify(body), "\nErr: " + JSON.stringify(err),"\nRequest Options: " + JSON.stringify(options));
     }
-    return request.post(options, callback);
-    */
+    request.post(options, callback);
+    winston.info("after post");
 }
 
 logError('MyGovBC-MSP-Service server started on port 8080');
