@@ -215,10 +215,6 @@ function logError (message) {
     // log locally
     winston.info(message);
 
-    var postData = {
-        'msg':  message
-    };
-
     var options = {
         hostname: process.env.LOGGER_HOST,
         port: 8080,
@@ -248,7 +244,7 @@ function logError (message) {
     });
 
     // write data to request body
-    req.write(postData);
+    req.write(message);
     req.end();
 }
 
