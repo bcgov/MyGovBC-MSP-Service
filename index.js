@@ -215,25 +215,44 @@ function logError (message) {
     // log locally
     winston.info(message);
 
-    // send to splunk server
-    var options = {
-        url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT + '/log',
-        headers: {
-            'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN
-        },
-        body: message
+    var postData = {
+        'msg':  message
     };
-    function callback(err, resp, body) {
 
-        winston.info("In callback");
-        if (!err && response.statusCode == 200) {
-            winston.error ("ERROR: " + body);
+    var options = {
+        hostname: process.env.LOGGER_HOST,
+        port: 8080,
+        path: '/log',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN,
+            'Content-Length': Buffer.byteLength(postData)
         }
+    };
 
-        winston.info("Splunk-forwarder response:" + resp, "\nBody: " + JSON.stringify(body), "\nErr: " + JSON.stringify(err),"\nRequest Options: " + JSON.stringify(options));
-    }
-    request.post(options, callback);
-    winston.info("after post");
+    var req = http.request(options, function (res) {
+        console.log("STATUS: " + res.statusCode);
+        console.log("HEADERS: " + JSON.stringify(res.headers));
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            console.log("BODY: " + JSON.stringify(chunk));
+        });
+        res.on('end', function () {
+            console.log('No more data in response.');
+        });
+    });
+
+    req.on('error', function (e) {
+        console.error("problem with request: " + e.message);
+    });
+
+    // write data to request body
+    req.write(postData);
+    req.end();
 }
 
 logError('MyGovBC-MSP-Service server started on port 8080');
+
+
+
