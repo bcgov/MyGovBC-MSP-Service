@@ -213,8 +213,9 @@ function denyAccess(message, res, req) {
 function logError (message) {
 
     // log locally
-    winston.error(message);
+    winston.info(message);
 
+    /*
     // send to splunk server
     var options = {
         url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT + '/log',
@@ -231,26 +232,7 @@ function logError (message) {
         winston.info("Splunk-forwarder response:" + resp, "\nBody: " + JSON.stringify(body), "\nErr: " + JSON.stringify(err),"\nRequest Options: " + JSON.stringify(options));
     }
     return request.post(options, callback);
+    */
 }
-
-// log the startup
-winston.info('MyGovBC-MSP-Service server started on port 8080');
-
-// send to splunk server
-var options = {
-    url: process.env.LOGGER_HOST + ':' + process.env.LOGGER_PORT + '/log',
-    headers: {
-        'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN
-    }
-};
-
-function callback(err, resp, body) {
-    if (!err && response.statusCode == 200) {
-        winston.error ("ERROR: " + body);
-    }
-}
-request.post(options, callback);
-
-
 
 logError('MyGovBC-MSP-Service server started on port 8080');
