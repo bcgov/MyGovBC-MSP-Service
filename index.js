@@ -235,7 +235,7 @@ function logError (message) {
         }
     };
 
-    winston.info("OPTIONS: " + JSON.stringify(options), "\nREQUEST BODY: " + JSON.stringify(body));
+    winston.info("REQUEST BODY: " + body);
 
     var req = http.request(options, function (res) {
         console.log("STATUS: " + res.statusCode);
