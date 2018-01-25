@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "msp-service-build",
+    "name": "mygovbc-msp-service",
     "annotations": {
       "description": "Contains build objects",
       "iconClass": "icon-github"
@@ -114,7 +114,7 @@
       "displayName": "Application Name",
       "description": "The name given to the application",
       "required": true,
-      "value": "msp-service"
+      "value": "mygovbc-msp-service"
     },
     {
       "name": "GIT_SOURCE_URL",
