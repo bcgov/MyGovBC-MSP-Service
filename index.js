@@ -230,6 +230,8 @@ function logError (message) {
         }
     };
 
+    winston.info("OPTIONS: " + JSON.stringify(options), "\nPOSTDATA: " + JSON.stringify(postData));
+
     var req = http.request(options, function (res) {
         console.log("STATUS: " + res.statusCode);
         console.log("HEADERS: " + JSON.stringify(res.headers));
