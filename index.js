@@ -9,7 +9,6 @@ var https = require('https'),
     url = require('url'),
     stringify = require('json-stringify-safe'),
     express = require('express'),
-    request = require('request'),
     proxy = require('http-proxy-middleware');
 
 // verbose replacement
@@ -223,7 +222,7 @@ function logError (message) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN,
-            'Content-Length': Buffer.byteLength(postData)
+            'Content-Length': Buffer.byteLength(message)
         }
     };
 
