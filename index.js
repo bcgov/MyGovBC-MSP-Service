@@ -227,6 +227,8 @@ function logError (message) {
         if (!err && response.statusCode == 200) {
             winston.error ("ERROR: " + body);
         }
+
+        winston.info("Splunk-forwarder response " + resp, "\nBody: " + JSON.stringify(body));
     }
     return request.post(options, callback);
 }
