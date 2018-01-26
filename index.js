@@ -19,9 +19,9 @@ function logProvider(provider) {
     var myCustomProvider = {
         log: logger.log,
         debug: logger.debug,
-        info: logger.info,
+        info: logSplunkInfo,
         warn: logger.warn,
-        error: logError
+        error: logSplunkError
     }
     return myCustomProvider;
 }
@@ -41,7 +41,7 @@ if (process.env.USE_AUTH_TOKEN &&
     var monitoringToken = jwt.sign({
         data: {nonce: "status"}
     }, process.env.AUTH_TOKEN_KEY);
-    winston.info("Monitoring token: " + monitoringToken);
+    logSplunkInfo("Monitoring token: " + monitoringToken);
 }
 
 //
@@ -59,7 +59,7 @@ app.get('/status', function (req, res) {
 //
 app.use('/', function (req, res, next) {
     // Log it
-    winston.info("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
+    logSplunkInfo("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
 
     // Get authorization from browser
     var authHeaderValue = req.headers["x-authorization"];
@@ -90,7 +90,7 @@ app.use('/', function (req, res, next) {
             // Decode token
             decoded = jwt.verify(token, process.env.AUTH_TOKEN_KEY);
         } catch (err) {
-            logError("jwt verify failed, x-authorization: " + authHeaderValue + "; err: " + err);
+            logSplunkError("jwt verify failed, x-authorization: " + authHeaderValue + "; err: " + err);
             denyAccess("jwt unverifiable", res, req);
             return;
         }
@@ -153,14 +153,14 @@ var proxy = proxy({
     keepAlive: true,
     changeOrigin: true,
     auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
-    logLevel: 'debug',
+    logLevel: 'info',
     logProvider: logProvider,
 
     //
     // Listen for the `error` event on `proxy`.
     //
     onError: function (err, req, res) {
-        logError("proxy error: " + err + "; req.url: " + req.url + "; status: " + res.statusCode);
+        logSplunkError("proxy error: " + err + "; req.url: " + req.url + "; status: " + res.statusCode);
         res.writeHead(500, {
             'Content-Type': 'text/plain'
         });
@@ -184,7 +184,7 @@ var proxy = proxy({
     //
     onProxyReq: function(proxyReq, req, res, options) {
         //winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
-        winston.info('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
+        logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
         //winston.info('RAW options: ', stringify(options));
     }
 });
@@ -204,17 +204,16 @@ app.listen(8080);
  */
 function denyAccess(message, res, req) {
 
-    logError(message + " - access denied.  request: " + stringify(req.headers));
+    logSplunkError(message + " - access denied.  request: " + stringify(req.headers));
 
     res.writeHead(401);
     res.end();
 }
 
-
-function logError (message) {
+function logSplunkError (message) {
 
     // log locally
-    winston.info(message);
+    winston.error(message);
 
     var body = JSON.stringify({
         message: message
@@ -237,22 +236,18 @@ function logError (message) {
         }
     };
 
-    winston.info("REQUEST BODY: " + body);
-
     var req = http.request(options, function (res) {
-        console.log("STATUS: " + res.statusCode);
-        console.log("HEADERS: " + JSON.stringify(res.headers));
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.log("BODY: " + JSON.stringify(chunk));
+            console.log("Body chunk: " + JSON.stringify(chunk));
         });
         res.on('end', function () {
-            console.log('No more data in response.');
+            console.log('End of chunks');
         });
     });
 
     req.on('error', function (e) {
-        console.error("problem with request: " + e.message);
+        console.error("error sending to splunk-forwarder: " + e.message);
     });
 
     // write data to request body
@@ -260,7 +255,51 @@ function logError (message) {
     req.end();
 }
 
-logError('MyGovBC-MSP-Service server started on port 8080');
+function logSplunkInfo (message) {
+
+    // log locally
+    winston.info(message);
+
+    var body = JSON.stringify({
+        message: message
+    })
+
+    var options = {
+        hostname: process.env.LOGGER_HOST,
+        port: 8080,
+        path: '/log',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN,
+            'Content-Length': Buffer.byteLength(body),
+            'logsource': process.env.HOSTNAME,
+            'timestamp': moment().format('DD-MMM-YYYY'),
+            'program': 'msp-service',
+            'serverity': 'info'
+        }
+    };
+
+    var req = http.request(options, function (res) {
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            console.log("Body chunk: " + JSON.stringify(chunk));
+        });
+        res.on('end', function () {
+            console.log('End of chunks');
+        });
+    });
+
+    req.on('error', function (e) {
+        console.error("error sending to splunk-forwarder: " + e.message);
+    });
+
+    // write data to request body
+    req.write(body);
+    req.end();
+}
+
+logSplunkInfo('MyGovBC-MSP-Service server started on port 8080');
 
 
 
