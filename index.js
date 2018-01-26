@@ -9,6 +9,7 @@ var https = require('https'),
     url = require('url'),
     stringify = require('json-stringify-safe'),
     express = require('express'),
+    moment = require('moment');
     proxy = require('http-proxy-middleware');
 
 // verbose replacement
@@ -209,6 +210,7 @@ function denyAccess(message, res, req) {
     res.end();
 }
 
+
 function logError (message) {
 
     // log locally
@@ -229,7 +231,7 @@ function logError (message) {
             'Authorization': 'Splunk ' + process.env.SPLUNK_AUTH_TOKEN,
             'Content-Length': Buffer.byteLength(body),
             'logsource': process.env.HOSTNAME,
-            'timestamp': Date.now(),
+            'timestamp': moment().format('DD-MMM-YYYY'),
             'program': 'msp-service',
             'serverity': 'error'
         }
