@@ -222,7 +222,7 @@ function logSplunkError (message) {
 
     var options = {
         hostname: process.env.LOGGER_HOST,
-        port: 8080,
+        port: process.env.LOGGER_PORT,
         path: '/log',
         method: 'POST',
         headers: {
@@ -266,7 +266,7 @@ function logSplunkInfo (message) {
 
     var options = {
         hostname: process.env.LOGGER_HOST,
-        port: 8080,
+        port: process.env.LOGGER_PORT,
         path: '/log',
         method: 'POST',
         headers: {
