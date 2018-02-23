@@ -59,7 +59,7 @@ app.get('/status', function (req, res) {
 //
 app.use('/', function (req, res, next) {
     // Log it
-    logSplunkInfo("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
+   // logSplunkInfo("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
 
     // Get authorization from browser
     var authHeaderValue = req.headers["x-authorization"];
@@ -184,7 +184,7 @@ var proxy = proxy({
     //
     onProxyReq: function(proxyReq, req, res, options) {
         //winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
-        logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
+    //    logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
         //winston.info('RAW options: ', stringify(options));
     }
 });
