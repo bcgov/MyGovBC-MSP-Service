@@ -184,7 +184,7 @@ var proxy = proxy({
     //
     onProxyReq: function(proxyReq, req, res, options) {
         //winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
-        logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
+    //    logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
         //winston.info('RAW options: ', stringify(options));
     }
 });
