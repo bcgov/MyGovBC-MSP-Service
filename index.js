@@ -12,6 +12,8 @@ var https = require('https'),
     moment = require('moment');
     proxy = require('http-proxy-middleware');
 
+const cache = require('./cache');
+
 // verbose replacement
 function logProvider(provider) {
     var logger = winston;
@@ -53,6 +55,16 @@ var app = express();
 app.get('/status', function (req, res) {
     res.send("OK");
 });
+
+//
+// Cache service
+//
+// only enable if there are URLs to cache
+if (process.env.CACHE_URLS_CSV && process.env.CACHE_URLS_CSV.length){ 
+    cache.updateCache();
+    cache.setupCron();
+    app.use('/', cache.cacheMiddleware);
+}
 
 //
 // CAPTCHA Authorization, ALWAYS first

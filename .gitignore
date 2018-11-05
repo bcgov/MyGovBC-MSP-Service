@@ -4,3 +4,4 @@
 *.pfx
 package-lock.json
 .vscode/
+cache/*.json
