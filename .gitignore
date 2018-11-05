@@ -3,3 +3,4 @@
 *.pem
 *.pfx
 package-lock.json
+.vscode/
