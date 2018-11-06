@@ -44,6 +44,12 @@ async function cacheMiddleware(req, res, next) {
     } catch (error) {
         // cache miss, or an unexpected application error
         next();
+        if (CACHE_URLS.includes(url)){
+            //The URL should be cached, but isn't. Try to reload it for future
+            //requests (will not impact current request)
+            console.log('Missing cache for resource that should be cached! Attempting to reload. url:', url);
+            cacheResultFromURL(url);
+        }
         if (error !== "NO_CACHE") {
             console.error("Unexpected application error", error);
         }
