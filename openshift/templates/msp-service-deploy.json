@@ -369,6 +369,13 @@
       "name": "CACHE_REQ_USE_PROCESSDATE",
       "required": false,
       "value": "false"
+    },
+    {
+      "description": "If true, the filesystem will not be used to cache and instead it will be in memory. So, CACHE_FILE_PATH will be ignored. Suitable for smaller amounts of data",
+      "displayName": "CACHE_IN_MEMORY",
+      "name": "CACHE_IN_MEMORY",
+      "required": false,
+      "value": "true"
     }
   ]
 }

@@ -5,8 +5,17 @@ const CACHE_FILE_PATH = process.env.CACHE_FILE_PATH || 'cache/';
 const CronJob = require('cron').CronJob;
 const fs = require('fs');
 const CRON_EXPRESSION = process.env.CRON_EXPRESSION || '5 0 * * *';
+const CACHE_IN_MEMORY = (process.env.CACHE_IN_MEMORY === 'true') || false;
 
+/**
+ * The in-memory cache. DO NOT MODIFY DIRECTLY! Instead, use
+ * `saveCacheInMemory()` and `loadCacheInMemory()`
+ *
+ * This will make changing the cache easier in the future if necessary.
+ */
+const cacheStore = CACHE_IN_MEMORY ? {} : null;
 
+/** An array of strings for url fragments, e.g. ['/fpcareIntegration/rest/getMessages/'] */
 const CACHE_URLS = process.env.CACHE_URLS_CSV ? 
     process.env.CACHE_URLS_CSV.replace(/ /g, '') // Remove all spaces, if any exist they're just a user entry error
     .split(',') // convert csv into array
@@ -24,13 +33,13 @@ function updateCache() {
  * Middleware that checks if a URL has a cached resource, and if so, returns that resource.
  */
 async function cacheMiddleware(req, res, next) {
-    console.log('url: ', req.originalUrl); // TODO remove after dev
     let url = req.originalUrl;
     url = url.replace('//', '/'); //Fix issue of duplicate slashes at beginning after routing through nginx
+    // console.log('url: ', url);
     try {
         // if we have cached JSON, return it
         const cachedJSON = await loadCacheFromUrl(url);
-        console.log('cache found for ', url); // TODO: Remove
+        // console.log('cache found for ', url);
         res.json(cachedJSON)
     } catch (error) {
         // cache miss, or an unexpected application error
@@ -46,9 +55,12 @@ async function cacheMiddleware(req, res, next) {
  */
 function cacheResultFromURL(url) {
     backend.getJSON(url, (response) => {
-        const nameAndPath = getNameAndPathFromUrl(url);
-        // * Note - validation of response is handled in getJSON
-        saveJSONAsync(nameAndPath, response);
+        if (CACHE_IN_MEMORY){
+            saveCacheInMemory(url, response);
+        } else {
+            const nameAndPath = getNameAndPathFromUrl(url);
+            saveJSONAsync(nameAndPath, response);
+        }
     });
 }
 
@@ -74,6 +86,30 @@ function saveJSONAsync(nameAndPath, responseBody) {
  * @param {string} url - a url from req.originalUrl 
  */
 function loadCacheFromUrl(url) {
+    if (CACHE_IN_MEMORY){
+        return loadCacheFromMemory(url);
+    } else {
+        return loadCacheFromFileSystem(url);
+    }
+}
+
+function saveCacheInMemory(url, data){
+    cacheStore[url] = data;
+    console.log('updated cache in memory for url', url);
+}
+
+function loadCacheFromMemory(url){
+    return new Promise((resolve, reject) => {
+        if (cacheStore[url]){
+            resolve(cacheStore[url]);
+        }
+        else {
+            reject("NO_CACHE")
+        }
+    })
+}
+
+function loadCacheFromFileSystem(url) {
     const nameAndPath = getNameAndPathFromUrl(url);
     return new Promise((resolve, reject) => {
         fs.readFile(nameAndPath, (err, data) => {
@@ -87,7 +123,6 @@ function loadCacheFromUrl(url) {
         });
     });
 }
-
 
 /**
  * Returns the path with the filename to be generated from URL
