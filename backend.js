@@ -4,7 +4,7 @@ const uuidv4 = require('uuid/v4');
 
 const TARGET_URL = process.env.TARGET_URL || '';
 const TARGET_USERNAME_PASSWORD = process.env.TARGET_USERNAME_PASSWORD || '';
-const CACHE_REQ_USE_PROCESSDATE = (process.env.CACHE_REQ_USE_PROCESSDATE.toLowerCase() === 'true') || false;
+const CACHE_REQ_USE_PROCESSDATE = (process.env.CACHE_REQ_USE_PROCESSDATE === 'true') || false;
 
 
 // Create new HTTPS.Agent for mutual TLS purposes
