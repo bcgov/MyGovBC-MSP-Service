@@ -43,9 +43,7 @@ async function cacheMiddleware(req, res, next) {
  */
 function cacheResultFromURL(url) {
     backend.getJSON(url, (response) => {
-        // console.log('cacheResultFromURL ', url, '\nResponse', response);
         const nameAndPath = getNameAndPathFromUrl(url);
-        // TODO: Need to make sure we validate on all different error types before saving. What about stock error message?
         // * Note - validation of response is handled in getJSON
         saveJSONAsync(nameAndPath, response);
     });
