@@ -2,10 +2,15 @@ const https = require('https');
 const stringify = require('json-stringify-safe');
 const uuidv4 = require('uuid/v4');
 
-const TARGET_URL = process.env.TARGET_URL || '';
 const TARGET_USERNAME_PASSWORD = process.env.TARGET_USERNAME_PASSWORD || '';
 const CACHE_REQ_USE_PROCESSDATE = (process.env.CACHE_REQ_USE_PROCESSDATE === 'true') || false;
 
+let TARGET_URL = process.env.TARGET_URL || '';
+
+if (TARGET_URL && TARGET_URL.length){
+    // remove 'https' if it exists - but we need to keep it in process.env for the proxy
+    TARGET_URL = TARGET_URL.replace('http://', '').replace('https://', '')
+}
 
 // Create new HTTPS.Agent for mutual TLS purposes
 if (process.env.USE_MUTUAL_TLS &&
