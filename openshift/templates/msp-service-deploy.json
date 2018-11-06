@@ -327,6 +327,27 @@
       "name": "SPLUNK_AUTH_TOKEN",
       "required": true,
       "value": ""
+    },
+    {
+      "description": "File path to store the cache files. Only used if CACHE_URLS_CSV is set",
+      "displayName": "CACHE_FILE_PATH",
+      "name": "CACHE_FILE_PATH",
+      "required": false,
+      "value": "cache/"
+    },
+    {
+      "description": "Comma separated list of relative urls to cache, e.g. /fpcareIntegration/rest/getDeductibles,/fpcareIntegration/rest/getMessages",
+      "displayName": "CACHE_URLS_CSV",
+      "name": "CACHE_URLS_CSV",
+      "required": false,
+      "value": ""
+    },
+    {
+      "description": "A cron expression for how frequently to update the urls set in CACHE_URLS_CSV. Timezone is always for America/Vancouver. Defaults to 12:05am every day.",
+      "displayName": "CRON_EXPRESSION",
+      "name": "CRON_EXPRESSION",
+      "required": false,
+      "value": "5 0 * * *"
     }
   ]
 }
