@@ -376,6 +376,13 @@
       "name": "CACHE_IN_MEMORY",
       "required": false,
       "value": "true"
+    },
+    {
+      "description": "Must be true if the project is *not* MSP. Bypass the noun check for MSPDESubmitAttachment and MSPDESubmitApplication.",
+      "displayName": "BYPASS_MSP_CHECK",
+      "name": "BYPASS_MSP_CHECK",
+      "required": false,
+      "value": "false"
     }
   ]
 }

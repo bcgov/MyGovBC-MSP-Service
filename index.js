@@ -13,6 +13,7 @@ var https = require('https'),
     proxy = require('http-proxy-middleware');
 
 const cache = require('./cache');
+const BYPASS_MSP_CHECK = (process.env.BYPASS_MSP_CHECK === 'true') || false;
 
 // verbose replacement
 function logProvider(provider) {
@@ -115,28 +116,30 @@ app.use('/', function (req, res, next) {
             return;
         }
 
-        // Check against the resource URL
-        // typical URL:
-        //    /MSPDESubmitApplication/2ea5e24c-705e-f7fd-d9f0-eb2dd268d523?programArea=enrolment
-        var pathname = url.parse(req.url).pathname;
-        var pathnameParts = pathname.split("/");
+        if (!BYPASS_MSP_CHECK){
+            // Check against the resource URL
+            // typical URL:
+            //    /MSPDESubmitApplication/2ea5e24c-705e-f7fd-d9f0-eb2dd268d523?programArea=enrolment
+            var pathname = url.parse(req.url).pathname;
+            var pathnameParts = pathname.split("/");
 
-        // find the noun(s)
-        var nounIndex = pathnameParts.indexOf("MSPDESubmitAttachment");
-        if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("MSPDESubmitApplication");
-        }
+            // find the noun(s)
+            var nounIndex = pathnameParts.indexOf("MSPDESubmitAttachment");
+            if (nounIndex < 0) {
+                nounIndex = pathnameParts.indexOf("MSPDESubmitApplication");
+            }
 
-        if (nounIndex < 0 ||
-            pathnameParts.length < nounIndex + 2) {
-            denyAccess("missing noun or resource id", res, req);
-            return;
-        }
+            if (nounIndex < 0 ||
+                pathnameParts.length < nounIndex + 2) {
+                denyAccess("missing noun or resource id", res, req);
+                return;
+            }
 
-        // Finally, check that resource ID against the nonce
-        if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
-            denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
-            return;
+            // Finally, check that resource ID against the nonce
+            if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
+                denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
+                return;
+            }
         }
     }
     // OK its valid let it pass thru this event
