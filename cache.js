@@ -25,10 +25,12 @@ function updateCache() {
  */
 async function cacheMiddleware(req, res, next) {
     console.log('url: ', req.originalUrl); // TODO remove after dev
+    let url = req.originalUrl;
+    url = url.replace('//', '/'); //Fix issue of duplicate slashes at beginning after routing through nginx
     try {
         // if we have cached JSON, return it
-        const cachedJSON = await loadCacheFromUrl(req.originalUrl);
-        console.log('cache found for ', req.originalUrl); // TODO: Remove
+        const cachedJSON = await loadCacheFromUrl(url);
+        console.log('cache found for ', url); // TODO: Remove
         res.json(cachedJSON)
     } catch (error) {
         // cache miss, or an unexpected application error
