@@ -362,6 +362,13 @@
       "name": "CRON_EXPRESSION",
       "required": false,
       "value": "5 0 * * *"
+    },
+    {
+      "description": "Should processDate be generated and added to the body of cache requests?",
+      "displayName": "CACHE_REQ_USE_PROCESSDATE",
+      "name": "CACHE_REQ_USE_PROCESSDATE",
+      "required": false,
+      "value": "false"
     }
   ]
 }

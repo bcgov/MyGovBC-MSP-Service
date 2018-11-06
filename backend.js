@@ -1,8 +1,10 @@
 const https = require('https');
 const stringify = require('json-stringify-safe');
+const uuidv4 = require('uuid/v4');
 
 const TARGET_URL = process.env.TARGET_URL || '';
 const TARGET_USERNAME_PASSWORD = process.env.TARGET_USERNAME_PASSWORD || '';
+const CACHE_REQ_USE_PROCESSDATE = (process.env.CACHE_REQ_USE_PROCESSDATE.toLowerCase() === 'true') || false;
 
 
 // Create new HTTPS.Agent for mutual TLS purposes
@@ -30,16 +32,16 @@ function getJSON(url, callback, errCallback) {
     // If no error callback, just log it.
     if (!errCallback) errCallback = console.log;
 
-    // TODO - How to make this generic and not specific to FPC? Esp with processDate being programmatic.
-    // ? eval on env vars?  workable but BAD!
-    // ? break into multiple envs?
-    // CACHE_REQ_CLIENT_NAME and CACHE_REQ_USE_PROCESSDATE
-    const reqBody = stringify({
+    let reqBody = {
         clientName: 'ppiweb',
-        processDate: getProcessDate(),
-        // TODO - Add UUID here, so we can track requests up/down
-        // uuid: 'cache-{uuid}'
-    });
+        uuid: `cache-${uuidv4()}`
+    };
+
+    if (CACHE_REQ_USE_PROCESSDATE){
+        reqBody['processDate'] = getProcessDate();
+    }
+
+    reqBody = stringify(reqBody);
 
     const reqOptions = {
         hostname: TARGET_URL,
