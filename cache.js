@@ -7,10 +7,11 @@ const fs = require('fs');
 const CRON_EXPRESSION = process.env.CRON_EXPRESSION || '5 0 * * *';
 
 
-const CACHE_URLS = process.env.CACHE_URLS_CSV
-    .replace(/ /g, '') // Remove all spaces, if any exist they're just a user entry error
+const CACHE_URLS = process.env.CACHE_URLS_CSV ? 
+    process.env.CACHE_URLS_CSV.replace(/ /g, '') // Remove all spaces, if any exist they're just a user entry error
     .split(',') // convert csv into array
     .map(url => url.replace(/\/+$/, "")) // Remove trailing slashes on each url if any
+    : ''
 
 /**
  * Load JSON and save for all URLS set from CACHE_URLS_CSV
