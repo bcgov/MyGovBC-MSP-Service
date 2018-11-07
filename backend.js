@@ -1,6 +1,7 @@
 const https = require('https');
 const stringify = require('json-stringify-safe');
 const uuidv4 = require('uuid/v4');
+const {timestamp} = require('./timestamp');
 
 const TARGET_USERNAME_PASSWORD = process.env.TARGET_USERNAME_PASSWORD || '';
 const CACHE_REQ_USE_PROCESSDATE = (process.env.CACHE_REQ_USE_PROCESSDATE === 'true') || false;
@@ -30,16 +31,18 @@ if (process.env.USE_MUTUAL_TLS &&
  * @param {string} url
  * @param {func} callback 
  * @param {func} errCallback
+ * @param {int} retryCount - max amount of times to retry request if it failed.
  */
-function getJSON(url, callback, errCallback) {
-    console.log(`getJSON -- ${TARGET_URL + url}`); // add timestamp?
+function getJSON(url, callback, errCallback, retryCount=3) {
+    const uuid = `cache-${uuidv4()}`
+    console.log(`getJSON -- ${TARGET_URL + url}`, {time: timestamp(new Date()), uuid}, '\n'); 
 
     // If no error callback, just log it.
     if (!errCallback) errCallback = console.log;
 
     let reqBody = {
         clientName: 'ppiweb',
-        uuid: `cache-${uuidv4()}`
+        uuid,
     };
 
     if (CACHE_REQ_USE_PROCESSDATE){
@@ -78,20 +81,39 @@ function getJSON(url, callback, errCallback) {
                     callback(obj);
                 }
                 else {
-                    errCallback({ error: "regStatusCode is not 0", response: obj });
+                    errCallback({ error: `regStatusCode is not 0 for ${TARGET_URL + url}`, response: obj, uuid, time: timestamp(new Date()) });
+                    retry();
                 }
             } catch (error) {
-                errCallback({ error: "Unable to parse JSON", response: output, exception: error });
+                errCallback({ error: `Unable to parse JSON for ${TARGET_URL + url}`, response: output, exception: error, uuid, time: timestamp(new Date()) });
+                retry();
             }
         });
     })
 
     req.on('error', (e) => {
-        errCallback({ error: "Error on request" + e.message });
+        errCallback({ error: `Error on request for ${TARGET_URL + url}`, exception: e, uuid, time: timestamp(new Date()) });
+        retry();
     });
 
     req.write(reqBody);
     req.end();
+
+    /**
+     * Retries the getJSON request, while decrementing the retryCount.
+     */
+    function retry() {
+        const RETRY_DELAY = 1000 * 10; //in ms
+        if (retryCount > 0) {
+            console.log(`retrying failed getJSON for ${TARGET_URL + url}`, {retryCount})
+            setTimeout(() => {
+                getJSON(url, callback, errCallback, --retryCount);
+            }, RETRY_DELAY)
+        }
+        else {
+            console.log(`out of retry attempts for getJSON for ${TARGET_URL + url}`);
+        }
+    }
 }
 
 

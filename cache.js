@@ -1,4 +1,4 @@
-
+const { timestamp } = require("./timestamp");
 const backend = require('./backend');
 const stringify = require('json-stringify-safe');
 const CACHE_FILE_PATH = process.env.CACHE_FILE_PATH || 'cache/';
@@ -150,10 +150,8 @@ function convertUrlToFileName(url) {
  * Setup a cron job to update the cache, using env var CRON_EXPRESSION
  */
 function setupCron() {
-    const timeZone = 'America/Vancouver'
     new CronJob(CRON_EXPRESSION, () => {
-        const time = new Date();
-        const buildTime = `${ time.toLocaleDateString('en-CA', {timeZone}) } at ${time.toLocaleTimeString('en-CA', {timeZone}) } (${timeZone})`;
+        const buildTime = timestamp(new Date());
         console.log(`-----\nCron fired - ${buildTime}\n-----`);
         updateCache();
     }, null, true, 'America/Vancouver')
@@ -163,5 +161,5 @@ module.exports = {
     updateCache,
     loadCacheFromUrl,
     cacheMiddleware,
-    setupCron
+    setupCron,
 }
