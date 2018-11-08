@@ -43,7 +43,7 @@ function getJSON(url, callback, errCallback, retryCount=3) {
     if (!errCallback) errCallback = logSplunkError;
 
     let reqBody = {
-        // clientName: 'ppiweb',
+        clientName: 'ppiweb',
         uuid,
     };
 
