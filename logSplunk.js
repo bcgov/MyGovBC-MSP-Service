@@ -25,10 +25,10 @@ function logSplunkError(message) {
     var req = http.request(options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.log("Body chunk: " + JSON.stringify(chunk));
+            // console.log("Body chunk: " + JSON.stringify(chunk));
         });
         res.on('end', function () {
-            console.log('End of chunks');
+            // console.log('End of chunks');
         });
     });
     req.on('error', function (e) {

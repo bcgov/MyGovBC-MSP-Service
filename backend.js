@@ -36,8 +36,8 @@ if (process.env.USE_MUTUAL_TLS &&
  */
 function getJSON(url, callback, errCallback, retryCount=3) {
     const uuid = `cache-${uuidv4()}`
-    // logSplunkInfo(`getJSON -- ${TARGET_URL + url}`, {time: timestamp(new Date()), uuid}, '\n'); 
-    logSplunkInfo(`getJSON -- ${TARGET_URL + url}`, {time: timestamp(new Date()), uuid}, '\n'); 
+    logSplunkInfo({message: `getJSON -- ${TARGET_URL + url}`, time: timestamp(new Date()), uuid }); 
+
 
     // If no error callback, log it.
     if (!errCallback) errCallback = logSplunkError;
