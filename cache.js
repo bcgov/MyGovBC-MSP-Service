@@ -6,6 +6,7 @@ const CronJob = require('cron').CronJob;
 const fs = require('fs');
 const CRON_EXPRESSION = process.env.CRON_EXPRESSION || '5 0 * * *';
 const CACHE_IN_MEMORY = (process.env.CACHE_IN_MEMORY === 'true') || false;
+const { logSplunkInfo, logSplunkError } = require("./logSplunk");
 
 /**
  * The in-memory cache. DO NOT MODIFY DIRECTLY! Instead, use
@@ -35,11 +36,9 @@ function updateCache() {
 async function cacheMiddleware(req, res, next) {
     let url = req.originalUrl;
     url = url.replace('//', '/'); //Fix issue of duplicate slashes at beginning after routing through nginx
-    // console.log('url: ', url);
     try {
         // if we have cached JSON, return it
         const cachedJSON = await loadCacheFromUrl(url);
-        // console.log('cache found for ', url);
         res.json(cachedJSON)
     } catch (error) {
         // cache miss, or an unexpected application error
@@ -47,11 +46,11 @@ async function cacheMiddleware(req, res, next) {
         if (CACHE_URLS.includes(url)){
             //The URL should be cached, but isn't. Try to reload it for future
             //requests (will not impact current request)
-            console.log('Missing cache for resource that should be cached! Attempting to reload. url:', url);
+            logSplunkInfo(`Missing cache for resource that should be cached! Attempting to reload. url: ${url}`);
             cacheResultFromURL(url);
         }
         if (error !== "NO_CACHE") {
-            console.error("Unexpected application error", error);
+            logSplunkError({message: "Unexpected application error", error})
         }
     }
 }
@@ -67,6 +66,8 @@ function cacheResultFromURL(url) {
             const nameAndPath = getNameAndPathFromUrl(url);
             saveJSONAsync(nameAndPath, response);
         }
+    }, (error) => {
+        logSplunkError({message: "Failed to update cache, network request failed", error});
     });
 }
 
@@ -78,10 +79,9 @@ function cacheResultFromURL(url) {
 function saveJSONAsync(nameAndPath, responseBody) {
     fs.writeFile(nameAndPath, stringify(responseBody), (err) => {
         if (err) {
-            // Log error. Splunk maybe?
-            console.error('ERROR, something went wrong when trying to save file', err);
+            logSplunkError({message: "Failed to save file", error: err})
         }
-        console.log('updated cache for file:', nameAndPath);
+        logSplunkInfo(`updated cache on filesystem for file: ${nameAndPath}`);
     });
 }
 
@@ -101,7 +101,7 @@ function loadCacheFromUrl(url) {
 
 function saveCacheInMemory(url, data){
     cacheStore[url] = data;
-    console.log('updated cache in memory for url', url);
+    logSplunkInfo(`updated cache in memory for url ${url}`);
 }
 
 function loadCacheFromMemory(url){
@@ -152,7 +152,7 @@ function convertUrlToFileName(url) {
 function setupCron() {
     new CronJob(CRON_EXPRESSION, () => {
         const buildTime = timestamp(new Date());
-        console.log(`-----\nCron fired - ${buildTime}\n-----`);
+        logSplunkInfo(`-----\nCron fired - ${buildTime}\n-----`);
         updateCache();
     }, null, true, 'America/Vancouver')
 }

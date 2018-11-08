@@ -2,6 +2,7 @@ const https = require('https');
 const stringify = require('json-stringify-safe');
 const uuidv4 = require('uuid/v4');
 const {timestamp} = require('./timestamp');
+const { logSplunkInfo, logSplunkError } = require("./logSplunk");
 
 const TARGET_USERNAME_PASSWORD = process.env.TARGET_USERNAME_PASSWORD || '';
 const CACHE_REQ_USE_PROCESSDATE = (process.env.CACHE_REQ_USE_PROCESSDATE === 'true') || false;
@@ -35,13 +36,14 @@ if (process.env.USE_MUTUAL_TLS &&
  */
 function getJSON(url, callback, errCallback, retryCount=3) {
     const uuid = `cache-${uuidv4()}`
-    console.log(`getJSON -- ${TARGET_URL + url}`, {time: timestamp(new Date()), uuid}, '\n'); 
+    // logSplunkInfo(`getJSON -- ${TARGET_URL + url}`, {time: timestamp(new Date()), uuid}, '\n'); 
+    logSplunkInfo(`getJSON -- ${TARGET_URL + url}`, {time: timestamp(new Date()), uuid}, '\n'); 
 
-    // If no error callback, just log it.
-    if (!errCallback) errCallback = console.log;
+    // If no error callback, log it.
+    if (!errCallback) errCallback = logSplunkError;
 
     let reqBody = {
-        clientName: 'ppiweb',
+        // clientName: 'ppiweb',
         uuid,
     };
 
@@ -105,13 +107,13 @@ function getJSON(url, callback, errCallback, retryCount=3) {
     function retry() {
         const RETRY_DELAY = 1000 * 10; //in ms
         if (retryCount > 0) {
-            console.log(`retrying failed getJSON for ${TARGET_URL + url}`, {retryCount})
+            logSplunkError(`retrying failed getJSON for ${TARGET_URL + url} - retries left: ${retryCount}`);
             setTimeout(() => {
                 getJSON(url, callback, errCallback, --retryCount);
             }, RETRY_DELAY)
         }
         else {
-            console.log(`out of retry attempts for getJSON for ${TARGET_URL + url}`);
+            errCallback({error: `out of retry attempts for getJSON for ${TARGET_URL + url}`})
         }
     }
 }
