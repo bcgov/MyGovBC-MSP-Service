@@ -119,7 +119,12 @@
                   {
                     "name": "SPLUNK_AUTH_TOKEN",
                     "value": "${SPLUNK_AUTH_TOKEN}"
+                  },
+                  {
+                    "name": "CRON_EXPRESSION",
+                    "value": "${CRON_EXPRESSION}"
                   }
+
                 ],
                 "resources": {
                   "requests": {
