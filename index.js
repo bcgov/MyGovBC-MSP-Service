@@ -116,7 +116,7 @@ app.use('/', function (req, res, next) {
         }
         var isACL =  false;
         if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("accLetterIntegration") + 2;
+            nounIndex = pathnameParts.indexOf("accLetterIntegration") + 1;
             logSplunkInfo("ACL Request Recieved probably:" +nounIndex)
             isACL = true;
         }
