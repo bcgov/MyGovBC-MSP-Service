@@ -114,11 +114,13 @@ app.use('/', function (req, res, next) {
         if (nounIndex < 0) {
             nounIndex = pathnameParts.indexOf("MSPDESubmitApplication");
         }
+        var isACL =  false;
         if (nounIndex < 0) {
             nounIndex = pathnameParts.indexOf("accLetterIntegration") + 2;
             logSplunkInfo("ACL Request Recieved probably:" +nounIndex)
+            isACL = true;
         }
-
+        logSplunkInfo("isACL"+isACL);
         if (nounIndex < 0 ||
             pathnameParts.length < nounIndex + 2) {
             denyAccess("missing noun or resource id", res, req);
@@ -126,7 +128,7 @@ app.use('/', function (req, res, next) {
         }
 
         // Finally, check that resource ID against the nonce
-        if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
+        if (!isACL && pathnameParts[nounIndex + 1] != decoded.data.nonce) {
             denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
             return;
         }
