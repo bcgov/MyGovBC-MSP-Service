@@ -115,7 +115,7 @@ app.use('/', function (req, res, next) {
             nounIndex = pathnameParts.indexOf("MSPDESubmitApplication");
         }
         if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("accLetterIntegration");
+            nounIndex = pathnameParts.indexOf("accLetterIntegration/rest/callRapid");
             logSplunkInfo("ACL Request Recieved probably:" +nounIndex)
         }
 
