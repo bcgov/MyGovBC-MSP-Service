@@ -126,11 +126,20 @@ app.use('/', function (req, res, next) {
             return;
         }
 
-        // Finally, check that resource ID against the nonce
-        if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
-            denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
-            return;
-        }
+		// check to see if not accLetterIntegration/suppbenefit
+		if (pathnameParts.indexOf("suppbenefit") > 0) {
+			if (pathnameParts[nounIndex + 2] != decoded.data.nonce) {                                                                                 
+                denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 2] + "; " + decoded.data.nonce, res, req);             
+                return;                                                                                                                            
+            } 
+		}
+		else {
+			// Finally, check that resource ID against the nonce
+			if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
+				denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
+				return;
+			}
+		}
     }
     // OK its valid let it pass thru this event
     next(); // pass control to the next handler
