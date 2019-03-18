@@ -173,7 +173,7 @@ if (process.env.USE_MUTUAL_TLS &&
 //
 // Create a HTTP Proxy server with a HTTPS target
 //
-var proxy = proxy({
+var baseProxy = proxy({
     target: process.env.TARGET_URL || "http://localhost:3000",
     agent: myAgent || http.globalAgent,
     secure: process.env.SECURE_MODE || false,
@@ -217,7 +217,43 @@ var proxy = proxy({
 });
 
 // Add in proxy AFTER authorization
-app.use('/', proxy);
+app.use('/', baseProxy);
+
+if (process.env.TARGET_URL_FILE && process.env.TARGET_URL_FILE.length){
+    var fileProxy = proxy('/file', {
+        target: process.env.TARGET_URL_FILE || "http://localhost:3000",
+        agent: myAgent || http.globalAgent,
+        secure: process.env.SECURE_MODE || false,
+        keepAlive: true,
+        changeOrigin: true,
+        auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
+        logLevel: 'info',
+        logProvider: logProvider,
+
+        onError: function (err, req, res) {
+            logSplunkError("fileProxy - proxy error: " + err + "; req.url: " + req.url + "; status: " + res.statusCode);
+            // res.writeHead(500, {
+            //     'Content-Type': 'text/plain'
+            // });
+
+            res.end('Error with proxy');
+        },
+        onProxyRes: function (proxyRes, req, res) {
+            winston.info('fileProxy - RAW Response from the target: ' + stringify(proxyRes.headers));
+
+            // // Delete set-cookie
+            // delete proxyRes.headers["set-cookie"];
+        },
+        onProxyReq: function(proxyReq, req, res, options) {
+            console.log('fileProxy onProxyReq');
+        }
+    });
+
+    // TODO - Write cURL request to verify it works
+    console.log('fileProxy - INIT, USING FILE PROXY')
+
+    app.use('/file', fileProxy);
+}
 
 // Start express
 app.listen(8080);
