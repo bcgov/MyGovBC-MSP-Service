@@ -38,7 +38,6 @@ function logSplunkError(message) {
     req.write(body);
     req.end();
 }
-exports.logSplunkError = logSplunkError;
 function logSplunkInfo(message) {
     // log locally
     winston.info(message);
@@ -77,4 +76,13 @@ function logSplunkInfo(message) {
     req.write(body);
     req.end();
 }
-exports.logSplunkInfo = logSplunkInfo;
+
+if (process.env.LOGGER_HOST === 'localhost') {
+    // This is mostly for local development.
+    exports.logSplunkInfo = console.log;
+    exports.logSplunkError = console.log;
+    console.log('LOGGER_HOST is set to localhost, so instead of using splunk all values will be locally logged.');
+} else {
+    exports.logSplunkInfo = logSplunkInfo;
+    exports.logSplunkError = logSplunkError;
+}

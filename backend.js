@@ -4,8 +4,25 @@ const uuidv4 = require('uuid/v4');
 const {timestamp} = require('./timestamp');
 const { logSplunkInfo, logSplunkError } = require("./logSplunk");
 
+const tls = require('tls');
+tls.DEFAULT_ECDH_CURVE = "auto";
+
 const TARGET_USERNAME_PASSWORD = process.env.TARGET_USERNAME_PASSWORD || '';
 const CACHE_REQ_USE_PROCESSDATE = (process.env.CACHE_REQ_USE_PROCESSDATE === 'true') || false;
+const CACHE_UUID_NAME = process.env.CACHE_UUID_NAME || 'uuid';
+
+
+/**
+ * Bypass any errors due to invalid certs (e.g. out of date SSL certs, or malformed certs).
+ * This should ONLY BE USED DURING DEVELOPMENT WHEN CERTS ARE DOWN!
+ */
+if (process.env.BYPASS_INVALID_TLS && process.env.BYPASS_INVALID_TLS === 'bypass'){
+    logSplunkInfo('BYPASSING ALL TLS CERTIFICATE CHECKS. THIS SHOULD BE FOR DEVELOPMENT ONLY!');
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
+}
+
+
+// tls.DEFAULT_ECDH_CURV
 
 let TARGET_URL = process.env.TARGET_URL || '';
 
@@ -36,6 +53,7 @@ if (process.env.USE_MUTUAL_TLS &&
  */
 function getJSON(url, callback, errCallback, retryCount=3) {
     const uuid = `cache-${uuidv4()}`
+    let hasRetried = false; // Can retry once per function invocation. If one request causes two errors, it will only retry once.
     logSplunkInfo({message: `getJSON -- ${TARGET_URL + url}`, time: timestamp(new Date()), uuid }); 
 
 
@@ -43,9 +61,15 @@ function getJSON(url, callback, errCallback, retryCount=3) {
     if (!errCallback) errCallback = logSplunkError;
 
     let reqBody = {
-        clientName: 'ppiweb',
-        uuid,
+        clientName: process.env.CLIENT_NAME,
+        
+        // // TODO - This was called just 'uuid' in FPC. Document change? Put behind new env variable?
+        // eventUUID: uuid,
     };
+
+    if (CACHE_UUID_NAME){
+        reqBody[CACHE_UUID_NAME] = uuid;
+    }
 
     if (CACHE_REQ_USE_PROCESSDATE){
         reqBody['processDate'] = getProcessDate();
@@ -79,14 +103,16 @@ function getJSON(url, callback, errCallback, retryCount=3) {
                 // report status, instead it uses regStatusCode, and 0 is a
                 // success. Sometimes the integration service is down and it
                 // returns a generic JSON message, or even HTML.
-                if (obj.regStatusCode && obj.regStatusCode === "0") {
+                if (obj.statusCode && obj.statusCode === "0") {
                     callback(obj);
                 }
                 else {
-                    errCallback({ error: `regStatusCode is not 0 for ${TARGET_URL + url}`, response: obj, uuid, time: timestamp(new Date()) });
+                    // will only be invoked once as it's on the 'end' event, so we don't need to check hasRetried
+                    errCallback({ error: `statusCode is not 0 for ${TARGET_URL + url}`, response: obj, uuid, time: timestamp(new Date()) });
                     retry();
                 }
             } catch (error) {
+                // will only be invoked once as it's on the 'end' event, so we don't need to check hasRetried
                 errCallback({ error: `Unable to parse JSON for ${TARGET_URL + url}`, response: output, exception: error, uuid, time: timestamp(new Date()) });
                 retry();
             }
@@ -94,8 +120,13 @@ function getJSON(url, callback, errCallback, retryCount=3) {
     })
 
     req.on('error', (e) => {
-        errCallback({ error: `Error on request for ${TARGET_URL + url}`, exception: e, uuid, time: timestamp(new Date()) });
-        retry();
+        console.log('Request error', e);
+
+        // Even if multiple errors fire, we only want to retry a max of once.
+        if (!hasRetried){
+            errCallback({ error: `Error on request for ${TARGET_URL + url}`, exception: e, uuid, time: timestamp(new Date()) });
+            retry();
+        }
     });
 
     req.write(reqBody);
@@ -105,6 +136,8 @@ function getJSON(url, callback, errCallback, retryCount=3) {
      * Retries the getJSON request, while decrementing the retryCount.
      */
     function retry() {
+        hasRetried = true;
+        // console.log(`RETRY CALLED. Count=${retryCount}, hasRetried=${hasRetried}`)
         const RETRY_DELAY = 1000 * 10; //in ms
         if (retryCount > 0) {
             logSplunkError(`retrying failed getJSON for ${TARGET_URL + url} - retries left: ${retryCount}`);

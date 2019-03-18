@@ -42,6 +42,7 @@ async function cacheMiddleware(req, res, next) {
         res.json(cachedJSON)
     } catch (error) {
         // cache miss, or an unexpected application error
+        // We call next() prior to our actions because we want to respond to the request prior to caching the file.
         next();
         if (CACHE_URLS.includes(url)){
             //The URL should be cached, but isn't. Try to reload it for future
