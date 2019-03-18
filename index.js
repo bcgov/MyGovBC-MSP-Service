@@ -71,6 +71,8 @@ if (process.env.CACHE_URLS_CSV && process.env.CACHE_URLS_CSV.length){
 app.use('/', function (req, res, next) {
     // Log it
     // logSplunkInfo("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
+    logSplunkInfo("incoming: " + req.url);
+	logSplunkInfo(" x-authorization: " + req.headers["x-authorization"]);
 
     // Get authorization from browser
     var authHeaderValue = req.headers["x-authorization"];
@@ -120,23 +122,35 @@ app.use('/', function (req, res, next) {
             //    /MSPDESubmitApplication/2ea5e24c-705e-f7fd-d9f0-eb2dd268d523?programArea=enrolment
             var pathname = url.parse(req.url).pathname;
             var pathnameParts = pathname.split("/");
-
+    
             // find the noun(s)
             var nounIndex = pathnameParts.indexOf("MSPDESubmitAttachment");
             if (nounIndex < 0) {
-                nounIndex = pathnameParts.indexOf("MSPDESubmitApplication");
+                nounIndex = pathnameParts.indexOf("MSPDESubmitApplication") ;
             }
-
+            if (nounIndex < 0) {
+                nounIndex = pathnameParts.indexOf("accLetterIntegration") ;
+            }
+    
             if (nounIndex < 0 ||
                 pathnameParts.length < nounIndex + 2) {
                 denyAccess("missing noun or resource id", res, req);
                 return;
             }
-
-            // Finally, check that resource ID against the nonce
-            if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
-                denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
-                return;
+    
+            // check to see if not accLetterIntegration/suppbenefit
+            if (pathnameParts.indexOf("suppbenefit") > 0) {
+                if (pathnameParts[nounIndex + 2] != decoded.data.nonce) {                                                                                 
+                    denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 2] + "; " + decoded.data.nonce, res, req);             
+                    return;                                                                                                                            
+                } 
+            }
+            else {
+                // Finally, check that resource ID against the nonce
+                if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
+                    denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
+                    return;
+                }
             }
         }
     }
