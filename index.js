@@ -16,6 +16,7 @@ var https = require('https'),
 
 const cache = require('./cache');
 const BYPASS_MSP_CHECK = (process.env.BYPASS_MSP_CHECK === 'true') || false;
+const SECURE_MODE = (process.env.SECURE_MODE === 'true') || false;
 
 // verbose replacement
 function logProvider(provider) {
@@ -96,7 +97,8 @@ var baseProxy = proxy({
     target: process.env.TARGET_URL || "http://localhost:3000",
     agent: myAgent || http.globalAgent,
     // secure: process.env.SECURE_MODE || false,
-    secure: false,
+    secure: SECURE_MODE,
+    // secure: false,
     keepAlive: true,
     changeOrigin: true,
     // auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
@@ -142,7 +144,8 @@ if (process.env.TARGET_URL_FILE && process.env.TARGET_URL_FILE.length){
     var fileProxy = proxy({
         target: process.env.TARGET_URL_FILE || "http://localhost:3000",
         agent: myAgent || http.globalAgent,
-        secure: process.env.SECURE_MODE || false,
+        secure: SECURE_MODE,
+        // secure: false,
         keepAlive: true,
         changeOrigin: true,
         auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
