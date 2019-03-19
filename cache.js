@@ -36,7 +36,6 @@ function updateCache() {
 async function cacheMiddleware(req, res, next) {
     let url = req.originalUrl;
     url = url.replace('//', '/'); //Fix issue of duplicate slashes at beginning after routing through nginx
-    console.log('cacheMiddleware URL', url);
     try {
         // if we have cached JSON, return it
         const cachedJSON = await loadCacheFromUrl(url);
@@ -94,7 +93,6 @@ function saveJSONAsync(nameAndPath, responseBody) {
  * @param {string} url - a url from req.originalUrl 
  */
 function loadCacheFromUrl(url) {
-    console.log('loadCacheFromURL', url, 'inMemory?', CACHE_IN_MEMORY);
     if (CACHE_IN_MEMORY){
         return loadCacheFromMemory(url);
     } else {
