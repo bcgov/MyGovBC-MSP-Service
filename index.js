@@ -65,6 +65,13 @@ if (process.env.CACHE_URLS_CSV && process.env.CACHE_URLS_CSV.length){
     app.use('/', cache.cacheMiddleware);
 }
 
+// Ignore, and refuse to proxy or authenticate, any requests to favicons.
+app.get('/favicon.ico', function(req, res) {
+    console.log('stopped favicon');
+    return res.sendStatus(204);
+})
+
+
 //
 // CAPTCHA Authorization, ALWAYS first
 //
