@@ -77,6 +77,7 @@ function logSplunkInfo(message) {
     req.end();
 }
 
+// If we set LOGGER_HOST to localhost, we can skip splunk and just console.log() everything.
 if (process.env.LOGGER_HOST === 'localhost') {
     // This is mostly for local development.
     exports.logSplunkInfo = console.log;
