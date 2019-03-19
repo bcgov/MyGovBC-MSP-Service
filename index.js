@@ -18,6 +18,8 @@ const cache = require('./cache');
 const BYPASS_MSP_CHECK = (process.env.BYPASS_MSP_CHECK === 'true') || false;
 const SECURE_MODE = (process.env.SECURE_MODE === 'true') || false;
 
+console.log('Init. Secure_mode?', SECURE_MODE) // TODO REMOVE
+
 // verbose replacement
 function logProvider(provider) {
     var logger = winston;
