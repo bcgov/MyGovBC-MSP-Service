@@ -22,11 +22,17 @@ function logProvider(provider) {
     var logger = winston;
 
     var myCustomProvider = {
-        log: logger.log,
-        debug: logger.debug,
-        info: logSplunkInfo,
-        warn: logger.warn,
-        error: logSplunkError
+        // TODO - REVERt TO ABOVE AFTER TESTING LOCALLY
+        // log: logger.log,
+        // debug: logger.debug,
+        // info: logSplunkInfo,
+        // warn: logger.warn,
+        // error: logSplunkError
+        log: console.log,
+        debug: console.log,
+        info: console.log,
+        warn: console.log,
+        error: console.log,
     }
     return myCustomProvider;
 }
@@ -123,7 +129,6 @@ app.use('/', function (req, res, next) {
             denyAccess("missing nonce", res, req);
             return;
         }
-
         if (!BYPASS_MSP_CHECK){
             // Check against the resource URL
             // typical URL:
@@ -163,6 +168,7 @@ app.use('/', function (req, res, next) {
         }
     }
     // OK its valid let it pass thru this event
+    console.log('Leaving auth/captcha middleware');
     next(); // pass control to the next handler
 });
 
@@ -182,12 +188,14 @@ if (process.env.USE_MUTUAL_TLS &&
 // Create a HTTP Proxy server with a HTTPS target
 //
 var baseProxy = proxy({
+    // TODO - Revert commented out lines
     target: process.env.TARGET_URL || "http://localhost:3000",
     agent: myAgent || http.globalAgent,
-    secure: process.env.SECURE_MODE || false,
+    // secure: process.env.SECURE_MODE || false,
+    secure: false,
     keepAlive: true,
     changeOrigin: true,
-    auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
+    // auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
     logLevel: 'info',
     logProvider: logProvider,
 
@@ -218,14 +226,16 @@ var baseProxy = proxy({
     // Listen for the `proxyReq` event on `proxy`.
     //
     onProxyReq: function(proxyReq, req, res, options) {
-        //winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
+        winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
     //    logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
         //winston.info('RAW options: ', stringify(options));
-    }
+    },
+
 });
 
 // Add in proxy AFTER authorization
 app.use('/', baseProxy);
+// app.use(baseProxy);
 
 if (process.env.TARGET_URL_FILE && process.env.TARGET_URL_FILE.length){
     var fileProxy = proxy('/file', {
@@ -260,7 +270,8 @@ if (process.env.TARGET_URL_FILE && process.env.TARGET_URL_FILE.length){
     // TODO - Write cURL request to verify it works
     console.log('fileProxy - INIT, USING FILE PROXY')
 
-    app.use('/file', fileProxy);
+    // app.use('/file', fileProxy);
+    app.use(fileProxy);
 }
 
 // Start express
