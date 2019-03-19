@@ -165,6 +165,7 @@ if (process.env.TARGET_URL_FILE && process.env.TARGET_URL_FILE.length){
         },
         onProxyReq: function(proxyReq, req, res, options) {
             console.log('fileProxy onProxyReq');
+            logSplunkInfo('fileProxy RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
         }
     });
 
@@ -172,7 +173,10 @@ if (process.env.TARGET_URL_FILE && process.env.TARGET_URL_FILE.length){
     console.log('fileProxy - INIT, USING FILE PROXY') // TODO remove
 
     // TODO - Do we need to use proxy context AND app.use()?
-    app.use('/file', fileProxy);
+    // app.use('/file', fileProxy);
+    // Sometimes the URL will come with two slashes before, so we need to listen to both.
+    app.use(['/file', '//file'], fileProxy);
+
     // app.use(fileProxy);
 }
 
