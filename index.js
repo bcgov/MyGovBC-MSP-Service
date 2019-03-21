@@ -180,7 +180,9 @@ if (process.env.TARGET_URL_FILE && process.env.TARGET_URL_FILE.length){
     // TODO - Do we need to use proxy context AND app.use()?
     // app.use('/file', fileProxy);
     // Sometimes the URL will come with two slashes before, so we need to listen to both.
-    app.use(['/file', '//file'], fileProxy);
+    // app.use(['/file', '//file'], fileProxy);
+    app.use(['/document', '//document'], fileProxy);
+
 
     // app.use(fileProxy);
 }
