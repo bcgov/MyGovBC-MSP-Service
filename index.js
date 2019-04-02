@@ -119,6 +119,9 @@ app.use('/', function (req, res, next) {
         if (nounIndex < 0) {
             nounIndex = pathnameParts.indexOf("accLetterIntegration") ;
         }
+        if (nounIndex < 0) {
+            nounIndex = pathnameParts.indexOf("siteregIntegration");
+        }
 
         if (nounIndex < 0 ||
             pathnameParts.length < nounIndex + 2) {
