@@ -130,7 +130,7 @@ app.use('/', function (req, res, next) {
         }
 
 		// check to see if not accLetterIntegration/suppbenefit
-		if (pathnameParts.indexOf("suppbenefit") > 0) {
+		if (pathnameParts.indexOf("suppbenefit") > 0 || pathnameParts.indexOf("siteregIntegration") > 0) {
 			if (pathnameParts[nounIndex + 2] != decoded.data.nonce) {                                                                                 
                 denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 2] + "; " + decoded.data.nonce, res, req);             
                 return;                                                                                                                            
