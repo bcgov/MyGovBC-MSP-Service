@@ -67,9 +67,6 @@ function getJSON(url, callback, errCallback, retryCount=3) {
         // eventUUID: uuid,
     };
 
-    if (CACHE_UUID_NAME){
-        reqBody[CACHE_UUID_NAME] = uuid;
-    }
 
     if (CACHE_REQ_USE_PROCESSDATE){
         reqBody['processDate'] = getProcessDate();
@@ -84,6 +81,12 @@ function getJSON(url, callback, errCallback, retryCount=3) {
         path: url,
         auth: TARGET_USERNAME_PASSWORD,
         timeout: 1000 * 30,
+    }
+
+    if (CACHE_UUID_NAME){
+        let headers = {};
+        headers[CACHE_UUID_NAME] = uuid;
+        reqOptions.headers = headers;
     }
 
     const req = https.request(reqOptions, res => {
