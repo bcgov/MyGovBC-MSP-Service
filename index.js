@@ -117,6 +117,12 @@ app.use('/', function (req, res, next) {
             nounIndex = pathnameParts.indexOf("MSPDESubmitApplication") ;
         }
         if (nounIndex < 0) {
+            nounIndex = pathnameParts.indexOf("submit-attachment") ;
+        }
+        if (nounIndex < 0) {
+            nounIndex = pathnameParts.indexOf("submit-application") ;
+        }
+        if (nounIndex < 0) {
             nounIndex = pathnameParts.indexOf("accLetterIntegration") ;
         }
         if (nounIndex < 0) {
