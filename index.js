@@ -55,6 +55,28 @@ app.get('/status', function (req, res) {
 });
 
 //
+// Init the SOAP address validation service
+//
+var avDS = loopback.createDataSource('soap',
+    {
+        name: 'AddressValidationDS',
+        connector: 'loopback-connector-soap',
+        remotingEnabled: true,
+        url: 'https://addrvaltst.hlth.gov.bc.ca/AddrValidation/AddressValidation',
+        wsdl:'https://addrvaltst.hlth.gov.bc.ca/AddrValidation/AddressValidation?wsdl',
+        wsdl_options: {
+            rejectUnauthorized: false,
+            strictSSL: false,
+            requestCert: true
+        },
+        operations: {
+            service: 'AddressValidation',
+            port: 'AddressValidationSoap',
+            operation: 'Process'
+        }
+    });
+
+//
 // CAPTCHA Authorization, ALWAYS first
 //
 app.use('/', function (req, res, next) {
