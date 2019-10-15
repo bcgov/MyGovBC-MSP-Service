@@ -1,7 +1,7 @@
 // jenkins file for splunk-forwarder
 
-def APP_NAME = 'mygovbc-msp-service'
-def APP_VERSION = 'master'
+def APP_NAME = 'address-validator'
+def APP_VERSION = 'addressValidation'
 def TAG_NAMES = ['dev', 'test', 'prod']
 def TAG_NAMES_BACKUP = ['devbackup', 'testbackup', 'prodbackup']
 
