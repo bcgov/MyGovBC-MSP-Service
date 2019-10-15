@@ -1,5 +1,5 @@
 {
-  "name": "mygovbc-msp-service",
+  "name": "address-validator",
   "version": "0.2.0",
   "description": "",
   "main": "index.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bcgov/MyGovBC-MSP-Service.git"
+    "url": "git+https://github.com/bcgov/MyGovBC-MSP-Service.git#addressValidation"
   },
   "author": "",
   "license": "Apache-2.0",
