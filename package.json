@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/bcgov/MyGovBC-MSP-Service#readme",
   "dependencies": {
+    "axios": "^0.19.0",
     "colors": "^1.1.2",
+    "easy-soap-request": "^3.2.0",
     "express": "^4.15.0",
     "http-proxy-middleware": "^0.20.0",
     "json-stringify-safe": "^5.0.1",
@@ -26,7 +28,8 @@
     "loopback": "^3.26.0",
     "loopback-connector-soap": "^5.0.0",
     "moment": "^2.20.1",
-    "winston": "^2.3.1"
+    "winston": "^2.3.1",
+    "xml-js": "^1.6.11"
   },
   "engines": {
     "node": ">=8.0.0"

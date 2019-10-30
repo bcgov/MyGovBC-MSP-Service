@@ -1,23 +1,56 @@
-var https = require('https'),
+const https = require('https'),
     http = require('http'),
-    util = require('util'),
-    path = require('path'),
-    fs = require('fs'),
-    colors = require('colors'),
     winston = require('winston'),
     jwt = require('jsonwebtoken'),
-    url = require('url'),
     stringify = require('json-stringify-safe'),
     express = require('express'),
-    moment = require('moment'),
-    loopback = require("loopback");
-proxy = require('http-proxy-middleware');
+    moment = require('moment');
+var proxy = require('http-proxy-middleware');
+const soap = require('easy-soap-request');
+const soapRequest = require('./soapRequest.js');
+const xmlConvert = require('xml-js');
+
+//
+// using Express
+const app = express();
+
+// Add status endpoint
+app.get('/status', function (req, res) {
+    res.send("OK");
+});
+
+// Add status endpoint
+app.get('/zip', function (req, res) {
+
+    const code = req.query.code;
+    const url = soapRequest.zip.url;
+    const sampleHeaders = soapRequest.zip.headers;
+    const xml = soapRequest.zip.request.replace("$zipcode", code);
+
+    res.setHeader('Content-Type', 'application/json');
+    
+    (async () => {
+        try {
+            const { response } = await soap({ url: url, headers: sampleHeaders, xml: xml, timeout: 5000 });
+            const { headers, body, statusCode } = response;
+            console.log(headers);
+            console.log(statusCode);
+            var result = xmlConvert.xml2json(body, {compact: true, spaces: 4});
+            res.send(result);
+        } catch (err) {
+            var result = xmlConvert.xml2json(err, {compact: true, spaces: 4});
+            res.send(result);
+        }
+
+    })();
+
+});
 
 // verbose replacement
 function logProvider(provider) {
-    var logger = winston;
+    const logger = winston;
 
-    var myCustomProvider = {
+    const myCustomProvider = {
         log: logger.log,
         debug: logger.debug,
         info: logSplunkInfo,
@@ -48,14 +81,122 @@ if (process.env.USE_AUTH_TOKEN &&
 }
 
 //
-// Init express
-//
-var app = express();
+// Node middleware method.  Fires before every path.
+// Log request & check Auth Token. Strip cookies, etc
+app.use('/', function (req, res, next) {
+    logSplunkInfo("incoming: " + req.url);
 
-// Add status endpoint
-app.get('/status', function (req, res) {
-    res.send("OK");
+    // Get authorization from browser
+    const authHeaderValue = req.headers["x-authorization"];
+    logSplunkInfo(" x-authorization: " + authHeaderValue);
+
+    // Delete it because we add HTTP Basic later
+    delete req.headers["x-authorization"];
+
+    // Delete any attempts at cookies
+    delete req.headers["cookie"];
+
+    // Validate token if enabled
+    if (process.env.USE_AUTH_TOKEN &&
+        process.env.USE_AUTH_TOKEN == "true" &&
+        process.env.AUTH_TOKEN_KEY &&
+        process.env.AUTH_TOKEN_KEY.length > 0) {
+
+        // Ensure we have a value
+        if (!authHeaderValue) {
+            denyAccess("missing header", res, req);
+            return;
+        }
+
+        // Parse out the token
+        const token = authHeaderValue.replace("Bearer ", "");
+
+        let decoded = null;
+        try {
+            // Decode token
+            decoded = jwt.verify(token, process.env.AUTH_TOKEN_KEY);
+        } catch (err) {
+            logSplunkError("jwt verify failed, x-authorization: " + authHeaderValue + "; err: " + err);
+            denyAccess("jwt unverifiable", res, req);
+            return;
+        }
+
+        // Ensure we have a nonce
+        if (decoded == null ||
+            decoded.data.nonce == null ||
+            decoded.data.nonce.length < 1) {
+            denyAccess("missing nonce", res, req);
+            return;
+        }
+
+    }
+
+    // Token OK.  Pass thru to url path
+    next();
 });
+
+
+let myAgent = null;
+// Create new HTTPS.Agent for mutual TLS purposes
+if (process.env.USE_MUTUAL_TLS &&
+    process.env.USE_MUTUAL_TLS == "true") {
+
+    const httpsAgentOptions = {
+        key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
+        passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
+        cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64')
+    };
+
+    myAgent = new https.Agent(httpsAgentOptions);
+}
+//
+// Create a HTTP Proxy server with a HTTPS target
+//
+const myProxy = proxy({
+    target: process.env.TARGET_URL || "http://localhost:3000",
+    agent: myAgent || http.globalAgent,
+    secure: process.env.SECURE_MODE || false,
+    keepAlive: true,
+    changeOrigin: true,
+    auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
+    logLevel: 'info',
+    logProvider: logProvider,
+
+    //
+    // Listen for the `error` event on `proxy`.
+    //
+    onError: function (err, req, res) {
+        logSplunkError("proxy error: " + err + "; req.url: " + req.url + "; status: " + res.statusCode);
+        res.writeHead(500, {
+            'Content-Type': 'text/plain'
+        });
+
+        res.end('Error with proxy');
+    },
+
+    //
+    // Listen for the `proxyRes` event on `proxy`.
+    //
+    onProxyRes: function (proxyRes, req, res) {
+        winston.info('RAW Response from the target: ' + stringify(proxyRes.headers));
+
+        // Delete set-cookie
+        delete proxyRes.headers["set-cookie"];
+    },
+
+    //
+    // Listen for the `proxyReq` event on `proxy`.
+    //
+    onProxyReq: function (proxyReq, req, res, options) {
+        //winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
+        //    logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
+        //winston.info('RAW options: ', stringify(options));
+    }
+});
+
+// Add in proxy AFTER authorization
+app.use('/', myProxy);
+
 
 //
 // Init the SOAP address validation service
@@ -79,166 +220,6 @@ app.get('/status', function (req, res) {
 //         }
 //     });
 
-//
-// CAPTCHA Authorization, ALWAYS first
-//
-app.use('/', function (req, res, next) {
-    // Log it
-    // logSplunkInfo("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
-    logSplunkInfo("incoming: " + req.url);
-    logSplunkInfo(" x-authorization: " + req.headers["x-authorization"]);
-
-    // Get authorization from browser
-    var authHeaderValue = req.headers["x-authorization"];
-
-    // Delete it because we add HTTP Basic later
-    delete req.headers["x-authorization"];
-
-    // Delete any attempts at cookies
-    delete req.headers["cookie"];
-
-    // Validate token if enabled
-    if (process.env.USE_AUTH_TOKEN &&
-        process.env.USE_AUTH_TOKEN == "true" &&
-        process.env.AUTH_TOKEN_KEY &&
-        process.env.AUTH_TOKEN_KEY.length > 0) {
-
-        // Ensure we have a value
-        if (!authHeaderValue) {
-            denyAccess("missing header", res, req);
-            return;
-        }
-
-        // Parse out the token
-        var token = authHeaderValue.replace("Bearer ", "");
-
-        var decoded = null;
-        try {
-            // Decode token
-            decoded = jwt.verify(token, process.env.AUTH_TOKEN_KEY);
-        } catch (err) {
-            logSplunkError("jwt verify failed, x-authorization: " + authHeaderValue + "; err: " + err);
-            denyAccess("jwt unverifiable", res, req);
-            return;
-        }
-
-        // Ensure we have a nonce
-        if (decoded == null ||
-            decoded.data.nonce == null ||
-            decoded.data.nonce.length < 1) {
-            denyAccess("missing nonce", res, req);
-            return;
-        }
-
-        // Check against the resource URL
-        // typical URL:
-        //    /MSPDESubmitApplication/2ea5e24c-705e-f7fd-d9f0-eb2dd268d523?programArea=enrolment
-        var pathname = url.parse(req.url).pathname;
-        var pathnameParts = pathname.split("/");
-
-        // find the noun(s)
-        var nounIndex = pathnameParts.indexOf("MSPDESubmitAttachment");
-        if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("MSPDESubmitApplication");
-        }
-        if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("submit-attachment");
-        }
-        if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("submit-application");
-        }
-        if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("accLetterIntegration");
-        }
-        if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("siteregIntegration");
-        }
-
-        if (nounIndex < 0 ||
-            pathnameParts.length < nounIndex + 2) {
-            denyAccess("missing noun or resource id", res, req);
-            return;
-        }
-
-        // check to see if not accLetterIntegration/suppbenefit
-        if (pathnameParts.indexOf("suppbenefit") > 0 || pathnameParts.indexOf("siteregIntegration") > 0) {
-            if (pathnameParts[nounIndex + 2] != decoded.data.nonce) {
-                denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 2] + "; " + decoded.data.nonce, res, req);
-                return;
-            }
-        }
-        else {
-            // Finally, check that resource ID against the nonce
-            if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
-                denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
-                return;
-            }
-        }
-    }
-    // OK its valid let it pass thru this event
-    next(); // pass control to the next handler
-});
-
-
-// Create new HTTPS.Agent for mutual TLS purposes
-if (process.env.USE_MUTUAL_TLS &&
-    process.env.USE_MUTUAL_TLS == "true") {
-    var httpsAgentOptions = {
-        key: new Buffer(process.env.MUTUAL_TLS_PEM_KEY_BASE64, 'base64'),
-        passphrase: process.env.MUTUAL_TLS_PEM_KEY_PASSPHRASE,
-        cert: new Buffer(process.env.MUTUAL_TLS_PEM_CERT, 'base64')
-    };
-
-    var myAgent = new https.Agent(httpsAgentOptions);
-}
-//
-// Create a HTTP Proxy server with a HTTPS target
-//
-var proxy = proxy({
-    target: process.env.TARGET_URL || "http://localhost:3000",
-    agent: myAgent || http.globalAgent,
-    secure: process.env.SECURE_MODE || false,
-    keepAlive: true,
-    changeOrigin: true,
-    auth: process.env.TARGET_USERNAME_PASSWORD || "username:password",
-    logLevel: 'info',
-    logProvider: logProvider,
-
-    //
-    // Listen for the `error` event on `proxy`.
-    //
-    onError: function (err, req, res) {
-        logSplunkError("proxy error: " + err + "; req.url: " + req.url + "; status: " + res.statusCode);
-        res.writeHead(500, {
-            'Content-Type': 'text/plain'
-        });
-
-        res.end('Error with proxy');
-    },
-
-
-    //
-    // Listen for the `proxyRes` event on `proxy`.
-    //
-    onProxyRes: function (proxyRes, req, res) {
-        winston.info('RAW Response from the target: ' + stringify(proxyRes.headers));
-
-        // Delete set-cookie
-        delete proxyRes.headers["set-cookie"];
-    },
-
-    //
-    // Listen for the `proxyReq` event on `proxy`.
-    //
-    onProxyReq: function (proxyReq, req, res, options) {
-        //winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
-        //    logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
-        //winston.info('RAW options: ', stringify(options));
-    }
-});
-
-// Add in proxy AFTER authorization
-app.use('/', proxy);
 
 // Start express
 app.listen(8080);
@@ -266,11 +247,11 @@ function logSplunkError(message) {
         return;
     }
 
-    var body = JSON.stringify({
+    const body = JSON.stringify({
         message: message
     })
 
-    var options = {
+    const options = {
         hostname: process.env.LOGGER_HOST,
         port: process.env.LOGGER_PORT,
         path: '/log',
@@ -286,7 +267,7 @@ function logSplunkError(message) {
         }
     };
 
-    var req = http.request(options, function (res) {
+    const req = http.request(options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             console.log("Body chunk: " + JSON.stringify(chunk));
@@ -312,11 +293,11 @@ function logSplunkInfo(message) {
         return;
     }
 
-    var body = JSON.stringify({
+    const body = JSON.stringify({
         message: message
     })
 
-    var options = {
+    const options = {
         hostname: process.env.LOGGER_HOST,
         port: process.env.LOGGER_PORT,
         path: '/log',
@@ -333,7 +314,7 @@ function logSplunkInfo(message) {
         }
     };
 
-    var req = http.request(options, function (res) {
+    const req = http.request(options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             console.log("Body chunk: " + JSON.stringify(chunk));
