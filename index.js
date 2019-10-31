@@ -19,7 +19,11 @@ app.get('/status', function (req, res) {
     res.send("OK");
 });
 
-// Add status endpoint
+
+app.get('/', function (req, res) {
+    res.send("OK");
+});
+
 app.get('/zip', function (req, res) {
 
     const code = req.query.code;
@@ -28,17 +32,17 @@ app.get('/zip', function (req, res) {
     const xml = soapRequest.zip.request.replace("$zipcode", code);
 
     res.setHeader('Content-Type', 'application/json');
-    
+
     (async () => {
         try {
             const { response } = await soap({ url: url, headers: sampleHeaders, xml: xml, timeout: 5000 });
             const { headers, body, statusCode } = response;
             console.log(headers);
             console.log(statusCode);
-            var result = xmlConvert.xml2json(body, {compact: true, spaces: 4});
+            var result = xmlConvert.xml2json(body, { compact: true, spaces: 4 });
             res.send(result);
         } catch (err) {
-            var result = xmlConvert.xml2json(err, {compact: true, spaces: 4});
+            var result = xmlConvert.xml2json(err, { compact: true, spaces: 4 });
             res.send(result);
         }
 
@@ -84,8 +88,9 @@ if (process.env.USE_AUTH_TOKEN &&
 // Node middleware method.  Fires before every path.
 // Log request & check Auth Token. Strip cookies, etc
 app.use('/', function (req, res, next) {
-    logSplunkInfo("incoming: " + req.url);
 
+    /****
+    logSplunkInfo("incoming: " + req.url);
     // Get authorization from browser
     const authHeaderValue = req.headers["x-authorization"];
     logSplunkInfo(" x-authorization: " + authHeaderValue);
@@ -130,7 +135,7 @@ app.use('/', function (req, res, next) {
         }
 
     }
-
+***/
     // Token OK.  Pass thru to url path
     next();
 });
