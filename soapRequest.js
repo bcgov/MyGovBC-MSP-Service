@@ -1,7 +1,7 @@
 
 const zipCodeRequest = {
-	url:  'https://graphical.weather.gov/xml/SOAP_server/ndfdXMLserver.php',
-	request:`<soapenv:Envelope 
+	url: 'https://graphical.weather.gov/xml/SOAP_server/ndfdXMLserver.php',
+	request: `<soapenv:Envelope 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
 	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
@@ -13,34 +13,62 @@ const zipCodeRequest = {
 	</ndf:LatLonListZipCode>
 	</soapenv:Body>
 </soapenv:Envelope>`,
-headers:{
-'user-agent': 'sampleTest',
-  'Content-Type': 'text/xml;charset=UTF-8',
-  'soapAction': 'https://graphical.weather.gov/xml/DWMLgen/wsdl/ndfdXML.wsdl#LatLonListZipCode'}
+	headers: {
+		'user-agent': 'sampleTest',
+		'Content-Type': 'text/xml;charset=UTF-8',
+		'soapAction': 'https://graphical.weather.gov/xml/DWMLgen/wsdl/ndfdXML.wsdl#LatLonListZipCode'
+	}
 };
 
+const addressValidationRequest = {
+	url: 'https://addrvaltst.hlth.gov.bc.ca/AddrValidation/AddressValidation',
+	request: `<soapenv:Envelope 
+	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:v4="http://validator5.AddressDoctor.com/Webservice5/v4">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v4:Process>
+         <v4:parameters>
+            <v4:ProcessMode>FASTCOMPLETION</v4:ProcessMode>
+         </v4:parameters>
+         <v4:addresses>
+            <v4:Address>
+               <v4:Country>
+                  <v4:string>$country</v4:string>
+               </v4:Country>
+               <v4:AddressComplete>$address</v4:AddressComplete>
+            </v4:Address>
+         </v4:addresses>
+      </v4:Process>
+   </soapenv:Body>
+</soapenv:Envelope>`,
+	headers: {
+		'user-agent': 'node.js',
+		'Content-Type': 'text/xml;charset=UTF-8'
+	}
+};
 
 function parseXml(xml) {
 	var dom = null;
 	if (window.DOMParser) {
-		 try { 
-				dom = (new DOMParser()).parseFromString(xml, "text/xml"); 
-		 } 
-		 catch (e) { dom = null; }
+		try {
+			dom = (new DOMParser()).parseFromString(xml, "text/xml");
+		}
+		catch (e) { dom = null; }
 	}
 	else if (window.ActiveXObject) {
-		 try {
-				dom = new ActiveXObject('Microsoft.XMLDOM');
-				dom.async = false;
-				if (!dom.loadXML(xml)) // parse error ..
+		try {
+			dom = new ActiveXObject('Microsoft.XMLDOM');
+			dom.async = false;
+			if (!dom.loadXML(xml)) // parse error ..
 
-					 window.alert(dom.parseError.reason + dom.parseError.srcText);
-		 } 
-		 catch (e) { dom = null; }
+				window.alert(dom.parseError.reason + dom.parseError.srcText);
+		}
+		catch (e) { dom = null; }
 	}
 	else
-		 alert("cannot parse xml string!");
+		alert("cannot parse xml string!");
 	return dom;
 }
 
-module.exports ={zip:zipCodeRequest, parseXml};
+module.exports = { zip: zipCodeRequest, address: addressValidationRequest, parseXml };

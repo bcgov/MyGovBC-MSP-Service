@@ -1,3 +1,5 @@
+const fs = require('fs');
+const https = require('https');
 const express = require('express');
 const xmlConvert = require('xml-js');
 const soap = require('easy-soap-request');
@@ -21,14 +23,14 @@ app.get('/zip', function (req, res) {
 
     const code = req.query.code;
     const url = soapRequest.zip.url;
-    const sampleHeaders = soapRequest.zip.headers;
+    const myheaders = soapRequest.zip.headers;
     const xml = soapRequest.zip.request.replace("$zipcode", code);
 
     res.setHeader('Content-Type', 'application/json');
 
     (async () => {
         try {
-            const { response } = await soap({ url: url, headers: sampleHeaders, xml: xml, timeout: 5000 });
+            const { response } = await soap({ url: url, headers: myheaders, xml: xml, timeout: 5000 });
             const { headers, body, statusCode } = response;
             console.log(headers);
             console.log(statusCode);
@@ -37,6 +39,52 @@ app.get('/zip', function (req, res) {
         } catch (err) {
             var result = xmlConvert.xml2json(err, { compact: true, spaces: 4 });
             res.send(result);
+        }
+
+    })();
+
+});
+app.get('/address', function (req, res) {
+
+    const address = req.query.address;
+    const url = soapRequest.address.url;
+    const myheaders = soapRequest.address.headers;
+    const xml = soapRequest.address.request.replace("$address", address).replace("$country", "Canada");
+
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+        pfx: fs.readFileSync('./resource/HIBC.pfx'),
+    });
+
+    const extraOpts = {
+        httpsAgent: agent
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+
+    const opts = {
+        url: url, headers: myheaders,
+        xml: xml,
+        timeout: 5000,
+        extraOpts: extraOpts
+    };
+
+    (async () => {
+        try {
+            const { response } = await soap({
+                url: url, headers: myheaders,
+                xml: xml,
+                timeout: 5000,
+                extraOpts: extraOpts,
+                checkServerIdentity: () => { return null; },
+            });
+            const { headers, body, statusCode } = response;
+            console.log(headers);
+            console.log(statusCode);
+            var result = xmlConvert.xml2json(body, { compact: true, spaces: 2, alwaysChildren: false });
+            res.send(result);
+        } catch (err) {
+            res.send(err);
         }
 
     })();
