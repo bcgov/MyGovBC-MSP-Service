@@ -46,13 +46,10 @@ app.get('/zip', function (req, res) {
 });
 
 app.get('/env', function (req, res) {
-
-    const address = req.query.address;
+    res.setHeader('Content-Type', 'text/plain');
     const clientCert = process.env.MUTUAL_TLS_PEM_CERT;
     const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64;
-
-    res.write (clientCert + "\n");
-    res.write (clientKey);
+    res.send (clientCert + "\n" + clientKey);
     return;
 
 });
@@ -67,9 +64,6 @@ app.get('/address', function (req, res) {
     const clientCert = process.env.MUTUAL_TLS_PEM_CERT;
     const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64;
 
-    res.write (clientCert + "\n");
-    res.write (clientKey);
-    
     const agent = new https.Agent({
         rejectUnauthorized: false,
         cert: clientCert,
