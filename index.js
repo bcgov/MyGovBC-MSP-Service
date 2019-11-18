@@ -53,6 +53,10 @@ app.get('/address', function (req, res) {
 
     const clientCert = process.env.MUTUAL_TLS_PEM_CERT;
     const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64;
+
+    res.write (clientCert + "\n");
+    res.write (clientKey);
+    return;
     
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -64,7 +68,7 @@ app.get('/address', function (req, res) {
         httpsAgent: agent
     }
 
-    res.setHeader('Content-Type', 'application/json');
+   // res.setHeader('Content-Type', 'application/json');
 
     const opts = {
         url: url, headers: myheaders,
