@@ -51,9 +51,13 @@ app.get('/address', function (req, res) {
     const myheaders = soapRequest.address.headers;
     const xml = soapRequest.address.request.replace("$address", address).replace("$country", "Canada");
 
+    const clientCert = process.env.MUTUAL_TLS_PEM_CERT;
+    const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64;
+    
     const agent = new https.Agent({
         rejectUnauthorized: false,
-        pfx: fs.readFileSync('./resource/HIBC.pfx'),
+        cert: clientCert,
+		key: clientKey,
     });
 
     const extraOpts = {
