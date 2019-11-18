@@ -36,10 +36,10 @@ app.get('/zip', function (req, res) {
             console.log(statusCode);
             var result = xmlConvert.xml2json(body, { compact: true, spaces: 4 });
             res.send(result);
-        } catch (err) {
+        } catch (err) {`
             var result = xmlConvert.xml2json(err, { compact: true, spaces: 4 });
             res.send(result);
-        }
+        }`
 
     })();
 
