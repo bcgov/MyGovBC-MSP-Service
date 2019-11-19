@@ -111,9 +111,13 @@ app.use('/', function (req, res, next) {
     next();
 });
 
+const clientCert = process.env.MUTUAL_TLS_PEM_CERT;
+const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64;
+
 // Start express
 app.listen(8080);
 console.log("Listening on port 8080");
-console.log("Cert: " + process.env.MUTUAL_TLS_PEM_CERT);
-console.log("Key: " + process.env.MUTUAL_TLS_PEM_KEY_BASE64);
+console.log("Cert: " + clientCert || clientCert.slice(0,100));
+console.log("Key: " + clientKey || clientKey.slice(0,100));
+
 
