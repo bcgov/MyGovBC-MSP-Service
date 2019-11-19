@@ -110,7 +110,7 @@ app.use('/', function (req, res, next) {
 function base64Decode(string) {
     if (!string)
         return "empty";
-    let buffer = new Buffer(string, 'base64');
+    let buffer = new Buffer.from(string, 'base64');
     return buffer.toString('ascii');
 }
 
