@@ -1,5 +1,6 @@
 const fs = require('fs');
 const https = require('https');
+const axios = require('axios');
 const express = require('express');
 const xmlConvert = require('xml-js');
 const soap = require('easy-soap-request');
@@ -47,9 +48,10 @@ app.get('/zip', function (req, res) {
 
 });
 
-app.get('/env', function (req, res) {
-    res.setHeader('Content-Type', 'text/plain');
-    res.send(clientCert.slice(0, 100) + "\n" + clientKey.slice(0, 100))
+app.get('/test', function (req, res) {
+    res.setHeader('Content-Type', 'text/html');
+    const url = soapRequest.address.url;
+    axios_request(url, res);
     return;
 });
 
@@ -121,3 +123,25 @@ console.log("Cert: " + clientCert.slice(0, 100));
 console.log("Key: " + clientKey.slice(0, 100));
 
 
+function axios_request(url, res) {
+
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+        cert: clientCert,
+        key: clientKey
+    });
+
+    // GET request for remote image
+    axios({
+        method: 'get',
+        url: url,
+        httpsAgent: agent,
+    })
+        .then(function (response) {
+            console.log(response.data);
+            res.send(response.data);
+        }).catch(function (error) {
+            console.log(error);
+            res.send(error);
+        });
+}
