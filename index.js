@@ -15,10 +15,16 @@ const app = express();
 
 // Add status endpoint
 app.get('/status', function (req, res) {
-    res.send("OK");
+    res.setHeader('Content-Type', 'text/plain');
+    console.log("Cert:\n" + clientCert.slice(0, 100));
+    console.log("Key:\n" + clientKey.slice(0, 100));
+    res.write("Cert:\n" + clientCert.slice(0, 100) + "\n");
+    res.write("Key:\n" + clientKey.slice(0, 100) + "\n");
+    res.end();
 });
 
 app.get('/', function (req, res) {
+    res.setHeader('Content-Type', 'text/plain');
     res.send("OK");
 });
 
@@ -49,16 +55,19 @@ app.get('/zip', function (req, res) {
 });
 
 app.get('/ip', function (req, res) {
-    res.setHeader('Content-Type', 'text/html');
-    const url = "https://www.whatsmyip.org/";
-    axios_request(url, res);
-    return;
+
+    res.setHeader('Content-Type', 'text/plain');
+    getIp()
+        .then(rep => res.send(rep.data))
+        .catch(err => res.send(err.message));
 });
 
 app.get('/test', function (req, res) {
     res.setHeader('Content-Type', 'text/html');
     const url = soapRequest.address.url;
-    axios_request(url, res);
+    axios_get(url)
+        .then(resp => res.send(resp.data))
+        .catch(err => { res.send(err.message); console.log(err.message); });
     return;
 });
 
@@ -79,7 +88,7 @@ app.get('/address', function (req, res) {
         httpsAgent: agent
     }
 
-    // res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Type', 'application/json');
 
     const opts = {
         url: url, headers: myheaders,
@@ -88,15 +97,17 @@ app.get('/address', function (req, res) {
         extraOpts: extraOpts
     };
 
+    const soapOpts = {
+        url: url, headers: myheaders,
+        xml: xml,
+        timeout: 5000,
+        extraOpts: extraOpts,
+        checkServerIdentity: () => { return null; },
+    };
+
     (async () => {
         try {
-            const { response } = await soap({
-                url: url, headers: myheaders,
-                xml: xml,
-                timeout: 5000,
-                extraOpts: extraOpts,
-                checkServerIdentity: () => { return null; },
-            });
+            const { response } = await soap(soapOpts);
             const { headers, body, statusCode } = response;
             console.log(headers);
             console.log(statusCode);
@@ -116,21 +127,15 @@ app.use('/', function (req, res, next) {
     next();
 });
 
-function base64Decode(string) {
-    if (!string)
-        return "empty";
-    let buffer = new Buffer.from(string, 'base64');
-    return buffer.toString('ascii');
-}
 
 // Start express
 app.listen(8080);
 console.log("Listening on port 8080");
-console.log("Cert: " + clientCert.slice(0, 100));
-console.log("Key: " + clientKey.slice(0, 100));
+// console.log("Cert: " + clientCert.slice(0, 100));
+// console.log("Key: " + clientKey.slice(0, 100));
 
 
-function axios_request(url, res) {
+async function axios_get(url, res) {
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -138,16 +143,24 @@ function axios_request(url, res) {
         key: clientKey
     });
 
-    // GET request for remote image
-    axios({
+    const options = {
         method: 'get',
         url: url,
         httpsAgent: agent,
-    })
-        .then(function (response) {
-            res.send(response.data);
-        }).catch(function (error) {
-            console.log(error);
-            res.send(error);
-        });
+    };
+
+    return axios(options);
 }
+
+function base64Decode(string) {
+    if (!string)
+        return "empty";
+    let buffer = new Buffer.from(string, 'base64');
+    return buffer.toString('ascii');
+}
+
+function getIp() {
+    const url = "https://api6.ipify.org?format=json";
+    return axios.get(url);
+}
+
