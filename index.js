@@ -48,6 +48,13 @@ app.get('/zip', function (req, res) {
 
 });
 
+app.get('/ip', function (req, res) {
+    res.setHeader('Content-Type', 'text/html');
+    const url = "https://www.whatsmyip.org/";
+    axios_request(url, res);
+    return;
+});
+
 app.get('/test', function (req, res) {
     res.setHeader('Content-Type', 'text/html');
     const url = soapRequest.address.url;
