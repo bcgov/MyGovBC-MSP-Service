@@ -145,7 +145,6 @@ function axios_request(url, res) {
         httpsAgent: agent,
     })
         .then(function (response) {
-            console.log(response.data);
             res.send(response.data);
         }).catch(function (error) {
             console.log(error);
