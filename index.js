@@ -5,6 +5,9 @@ const xmlConvert = require('xml-js');
 const soap = require('easy-soap-request');
 const soapRequest = require('./soapRequest.js');
 
+const clientCert = process.env.MUTUAL_TLS_PEM_CERT || "none";
+const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64 || "none";
+
 //
 // using Express
 const app = express();
@@ -47,11 +50,8 @@ app.get('/zip', function (req, res) {
 
 app.get('/env', function (req, res) {
     res.setHeader('Content-Type', 'text/plain');
-    const clientCert = process.env.MUTUAL_TLS_PEM_CERT;
-    const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64;
-    res.send (clientCert + "\n" + clientKey);
+    res.send (clientCert.slice(0,100) + "\n" + clientKey.slice(0,100))
     return;
-
 });
 
 app.get('/address', function (req, res) {
@@ -61,8 +61,8 @@ app.get('/address', function (req, res) {
     const myheaders = soapRequest.address.headers;
     const xml = soapRequest.address.request.replace("$address", address).replace("$country", "Canada");
 
-    const clientCert = process.env.MUTUAL_TLS_PEM_CERT;
-    const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64;
+    const clientCert = process.env.MUTUAL_TLS_PEM_CERT || "none";
+    const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64 || "none";
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
@@ -111,13 +111,12 @@ app.use('/', function (req, res, next) {
     next();
 });
 
-const clientCert = process.env.MUTUAL_TLS_PEM_CERT;
-const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64;
+
 
 // Start express
 app.listen(8080);
 console.log("Listening on port 8080");
-console.log("Cert: " + clientCert || clientCert.slice(0,100));
-console.log("Key: " + clientKey || clientKey.slice(0,100));
+console.log("Cert: " + clientCert.slice(0,100));
+console.log("Key: " +  clientKey.slice(0,100));
 
 
