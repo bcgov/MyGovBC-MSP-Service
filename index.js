@@ -114,3 +114,6 @@ app.use('/', function (req, res, next) {
 // Start express
 app.listen(8080);
 console.log("Listening on port 8080");
+console.log("cert: " + process.env.MUTUAL_TLS_PEM_CERT);
+console.log("key: " + process.env.MUTUAL_TLS_PEM_KEY_BASE64);
+
