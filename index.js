@@ -5,8 +5,8 @@ const xmlConvert = require('xml-js');
 const soap = require('easy-soap-request');
 const soapRequest = require('./soapRequest.js');
 
-const clientCert = process.env.MUTUAL_TLS_PEM_CERT || "none";
-const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64 || "none";
+const clientCert = base64Decode(process.env.MUTUAL_TLS_PEM_CERT);
+const clientKey = base64Decode(process.env.MUTUAL_TLS_PEM_KEY_BASE64);
 
 //
 // using Express
@@ -16,7 +16,6 @@ const app = express();
 app.get('/status', function (req, res) {
     res.send("OK");
 });
-
 
 app.get('/', function (req, res) {
     res.send("OK");
@@ -50,7 +49,7 @@ app.get('/zip', function (req, res) {
 
 app.get('/env', function (req, res) {
     res.setHeader('Content-Type', 'text/plain');
-    res.send (clientCert.slice(0,100) + "\n" + clientKey.slice(0,100))
+    res.send(clientCert.slice(0, 100) + "\n" + clientKey.slice(0, 100))
     return;
 });
 
@@ -61,20 +60,17 @@ app.get('/address', function (req, res) {
     const myheaders = soapRequest.address.headers;
     const xml = soapRequest.address.request.replace("$address", address).replace("$country", "Canada");
 
-    const clientCert = process.env.MUTUAL_TLS_PEM_CERT || "none";
-    const clientKey = process.env.MUTUAL_TLS_PEM_KEY_BASE64 || "none";
-
     const agent = new https.Agent({
         rejectUnauthorized: false,
         cert: clientCert,
-		key: clientKey,
+        key: clientKey,
     });
 
     const extraOpts = {
         httpsAgent: agent
     }
 
-   // res.setHeader('Content-Type', 'application/json');
+    // res.setHeader('Content-Type', 'application/json');
 
     const opts = {
         url: url, headers: myheaders,
@@ -111,12 +107,17 @@ app.use('/', function (req, res, next) {
     next();
 });
 
-
+function base64Decode(string) {
+    if (!string)
+        return "empty";
+    let buffer = new Buffer(string, 'base64');
+    return buffer.toString('ascii');
+}
 
 // Start express
 app.listen(8080);
 console.log("Listening on port 8080");
-console.log("Cert: " + clientCert.slice(0,100));
-console.log("Key: " +  clientKey.slice(0,100));
+console.log("Cert: " + clientCert.slice(0, 100));
+console.log("Key: " + clientKey.slice(0, 100));
 
 
