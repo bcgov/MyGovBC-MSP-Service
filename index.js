@@ -105,20 +105,28 @@ app.get('/address', function (req, res) {
         checkServerIdentity: () => { return null; },
     };
 
-    (async () => {
-        try {
-            const { response } = await soap(soapOpts);
-            const { headers, body, statusCode } = response;
-            console.log(headers);
-            console.log(statusCode);
-            var result = xmlConvert.xml2json(body, { compact: true, spaces: 2, alwaysChildren: false });
-            res.send(result);
-        } catch (err) {
-            res.send(err);
-        }
+    soap(soapOpts)
+        .then(data => {
+            const { headers, body, statusCode } = data.response;
 
-    })();
+            //console.log(headers);
+            //console.log(statusCode);
+            const result = xmlConvert.xml2json(body, { compact: true, spaces: 2, alwaysChildren: false });
+            const json = JSON.parse(result);
 
+            // This is a hack.  Need to parse more gracefully
+            const envelope = json['S:Envelope'];
+            const soapbody = envelope['S:Body'];
+            const presponse = soapbody.ProcessResponse;
+            const presult = presponse.ProcessResult;
+            const results = presult.Results;
+
+            res.send(results);
+        })
+        .catch(err => {
+            const error = { "error": err.message || err };
+            res.send(error); console.log(error);
+        });
 });
 
 // Node middleware method.  Fires before every path.
@@ -135,7 +143,7 @@ console.log("Listening on port 8080");
 // console.log("Key: " + clientKey.slice(0, 100));
 
 
-async function axios_get(url, res) {
+function axios_get(url, res) {
 
     const agent = new https.Agent({
         rejectUnauthorized: false,
