@@ -41,8 +41,8 @@ app.get('/zip', function (req, res) {
         try {
             const { response } = await soap({ url: url, headers: myheaders, xml: xml, timeout: 5000 });
             const { headers, body, statusCode } = response;
-            console.log(headers);
-            console.log(statusCode);
+            // console.log(headers);
+            // console.log(statusCode);
             var result = xmlConvert.xml2json(body, { compact: true, spaces: 4 });
             res.send(result);
         } catch (err) {
