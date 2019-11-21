@@ -1,6 +1,6 @@
 [{000214A0-0000-0000-C000-000000000046}]
-Prop3=19,2
+Prop3=19,11
 [InternetShortcut]
-URL=http://localhost:8080/address?address=2755%20Laurel%20St%20Vancouver%20BC
+URL=https://address-validator-service-dev.pathfinder.gov.bc.ca/address?=2755%20Laurel%20St%20Vancouver%20BC
 IDList=
 HotKey=0
