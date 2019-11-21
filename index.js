@@ -114,14 +114,23 @@ app.get('/address', function (req, res) {
             const result = xmlConvert.xml2json(body, { compact: true, spaces: 2, alwaysChildren: false });
             const json = JSON.parse(result);
 
-            // This is a hack.  Need to parse more gracefully
-            const envelope = json['S:Envelope'];
-            const soapbody = envelope['S:Body'];
-            const presponse = soapbody.ProcessResponse;
-            const presult = presponse.ProcessResult;
-            const results = presult.Results;
+            // This is a hack.  Need to parse more elegantly
+            const processResult = json['S:Envelope']['S:Body'].ProcessResponse.ProcessResult;
+            const dataSet = processResult.Results.Result.ResultDataSet.ResultData;
 
-            res.send(results);
+            const reply = { Address: [] }
+
+            // If dataSet is an Array, we have multiple responses
+            // console.log(dataSet.length)
+            if (dataSet.length) {
+                for (let address of dataSet) {
+                    reply.Address.push(address.Address)
+                }
+            }
+            else
+                reply.Address.push(dataSet.Address);
+
+            res.send(reply);
         })
         .catch(err => {
             const error = { "error": err.message || err };
