@@ -96,10 +96,9 @@ app.get('/address', function (req, res) {
             const processResult = json['S:Envelope']['S:Body'].ProcessResponse.ProcessResult;
             const dataSet = processResult.Results.Result.ResultDataSet.ResultData;
 
-            const reply = { Address: [] }
-
             // If dataSet is an Array, we have multiple responses
             // console.log(dataSet.length)
+            const reply = { Address: [] }
             if (dataSet.length) {
                 for (let address of dataSet) {
                     reply.Address.push(address.Address)
