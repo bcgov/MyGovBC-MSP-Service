@@ -227,7 +227,7 @@ app.listen(8080);
  */
 function denyAccess(message, res, req) {
 
-    logSplunkError(message + " - access denied.  request: " + stringify(req.headers));
+    logSplunkError(message + " - access denied: url: " + stringify(req.originalUrl) + "  request: " + stringify(req.headers));
 
     res.writeHead(401);
     res.end();
