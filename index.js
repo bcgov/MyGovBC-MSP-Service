@@ -9,9 +9,8 @@ var https = require('https'),
     url = require('url'),
     stringify = require('json-stringify-safe'),
     express = require('express'),
-    moment = require('moment'),
-    loopback = require("loopback");
-proxy = require('http-proxy-middleware');
+    moment = require('moment');
+    proxy = require('http-proxy-middleware');
 
 // verbose replacement
 function logProvider(provider) {
@@ -27,11 +26,9 @@ function logProvider(provider) {
     return myCustomProvider;
 }
 
-if (process.env.USE_CONSOLE_LOG)
-    winston.add(winston.transports.Console, {
-        name: "CONSOLE_LOG",
-        timestamp: true
-    });
+// winston.add(winston.transports.Console, {
+//    timestamp: true
+// });
 
 //
 // Generate token for monitoring apps
@@ -42,7 +39,7 @@ if (process.env.USE_AUTH_TOKEN &&
     process.env.AUTH_TOKEN_KEY.length > 0) {
 
     var monitoringToken = jwt.sign({
-        data: { nonce: "status" }
+        data: {nonce: "status"}
     }, process.env.AUTH_TOKEN_KEY);
     logSplunkInfo("Monitoring token: " + monitoringToken);
 }
@@ -58,35 +55,13 @@ app.get('/status', function (req, res) {
 });
 
 //
-// Init the SOAP address validation service
-//
-// var avDS = loopback.createDataSource('soap',
-//     {
-//         name: 'AddressValidationDS',
-//         connector: 'loopback-connector-soap',
-//         remotingEnabled: true,
-//         url: 'https://addrvaltst.hlth.gov.bc.ca/AddrValidation/AddressValidation',
-//         wsdl: 'https://addrvaltst.hlth.gov.bc.ca/AddrValidation/AddressValidation?wsdl',
-//         wsdl_options: {
-//             rejectUnauthorized: false,
-//             strictSSL: false,
-//             requestCert: true
-//         },
-//         operations: {
-//             service: 'AddressValidation',
-//             port: 'AddressValidationSoap',
-//             operation: 'Process'
-//         }
-//     });
-
-//
 // CAPTCHA Authorization, ALWAYS first
 //
 app.use('/', function (req, res, next) {
     // Log it
     // logSplunkInfo("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
     logSplunkInfo("incoming: " + req.url);
-    logSplunkInfo(" x-authorization: " + req.headers["x-authorization"]);
+	logSplunkInfo(" x-authorization: " + req.headers["x-authorization"]);
 
     // Get authorization from browser
     var authHeaderValue = req.headers["x-authorization"];
@@ -139,16 +114,16 @@ app.use('/', function (req, res, next) {
         // find the noun(s)
         var nounIndex = pathnameParts.indexOf("MSPDESubmitAttachment");
         if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("MSPDESubmitApplication");
+            nounIndex = pathnameParts.indexOf("MSPDESubmitApplication") ;
         }
         if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("submit-attachment");
+            nounIndex = pathnameParts.indexOf("submit-attachment") ;
         }
         if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("submit-application");
+            nounIndex = pathnameParts.indexOf("submit-application") ;
         }
         if (nounIndex < 0) {
-            nounIndex = pathnameParts.indexOf("accLetterIntegration");
+            nounIndex = pathnameParts.indexOf("accLetterIntegration") ;
         }
         if (nounIndex < 0) {
             nounIndex = pathnameParts.indexOf("siteregIntegration");
@@ -160,20 +135,20 @@ app.use('/', function (req, res, next) {
             return;
         }
 
-        // check to see if not accLetterIntegration/suppbenefit
-        if (pathnameParts.indexOf("suppbenefit") > 0 || pathnameParts.indexOf("siteregIntegration") > 0) {
-            if (pathnameParts[nounIndex + 2] != decoded.data.nonce) {
-                denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 2] + "; " + decoded.data.nonce, res, req);
-                return;
-            }
-        }
-        else {
-            // Finally, check that resource ID against the nonce
-            if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
-                denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
-                return;
-            }
-        }
+		// check to see if not accLetterIntegration/suppbenefit
+		if (pathnameParts.indexOf("suppbenefit") > 0 || pathnameParts.indexOf("siteregIntegration") > 0) {
+			if (pathnameParts[nounIndex + 2] != decoded.data.nonce) {                                                                                 
+                denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 2] + "; " + decoded.data.nonce, res, req);             
+                return;                                                                                                                            
+            } 
+		}
+		else {
+			// Finally, check that resource ID against the nonce
+			if (pathnameParts[nounIndex + 1] != decoded.data.nonce) {
+				denyAccess("resource id and nonce are not equal: " + pathnameParts[nounIndex + 1] + "; " + decoded.data.nonce, res, req);
+				return;
+			}
+		}
     }
     // OK its valid let it pass thru this event
     next(); // pass control to the next handler
@@ -230,9 +205,9 @@ var proxy = proxy({
     //
     // Listen for the `proxyReq` event on `proxy`.
     //
-    onProxyReq: function (proxyReq, req, res, options) {
+    onProxyReq: function(proxyReq, req, res, options) {
         //winston.info('RAW proxyReq: ', stringify(proxyReq.headers));
-        //    logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
+    //    logSplunkInfo('RAW URL: ' + req.url + '; RAW headers: ', stringify(req.headers));
         //winston.info('RAW options: ', stringify(options));
     }
 });
@@ -252,22 +227,21 @@ app.listen(8080);
  */
 function denyAccess(message, res, req) {
 
-    logSplunkError(message + " - access denied: url: " + stringify(req.originalUrl) + "  request: " + stringify(req.headers));
+    logSplunkError(message + " - access denied.  request: " + stringify(req.headers));
 
     res.writeHead(401);
     res.end();
 }
 
-function logSplunkError(message) {
+function logSplunkError (message) {
+
     // log locally
     winston.error(message);
-    if (process.env.USE_CONSOLE_LOG) {
-        return;
-    }
 
     var body = JSON.stringify({
         message: message
     })
+
 
     var options = {
         hostname: process.env.LOGGER_HOST,
@@ -304,12 +278,10 @@ function logSplunkError(message) {
     req.end();
 }
 
-function logSplunkInfo(message) {
+function logSplunkInfo (message) {
+
     // log locally
     winston.info(message);
-    if (process.env.USE_CONSOLE_LOG) {
-        return;
-    }
 
     var body = JSON.stringify({
         message: message
