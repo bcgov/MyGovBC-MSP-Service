@@ -61,7 +61,7 @@ app.use('/', function (req, res, next) {
     // Log it
     // logSplunkInfo("incoming: ", req.method, req.headers.host, req.url, res.statusCode, req.headers["x-authorization"]);
     logSplunkInfo("incoming: " + req.url);
-	logSplunkInfo(" x-authorization: " + req.headers["x-authorization"]);
+	// logSplunkInfo(" x-authorization: " + req.headers["x-authorization"]);
 
     // Get authorization from browser
     var authHeaderValue = req.headers["x-authorization"];
