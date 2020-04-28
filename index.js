@@ -25,10 +25,11 @@ app.get('/', function (req, res) {
 // Add status endpoint
 app.get('/status', function (req, res) {
     res.setHeader('Content-Type', 'text/plain');
-    console.log("Cert:\n" + clientCert.slice(0, 100));
+    res.write("URL: " + soapRequest.address.url + "\n");
+    // console.log("Cert:\n" + clientCert);
     console.log("Key:\n" + clientKey.slice(0, 100));
-    res.write("Cert:\n" + clientCert.slice(0, 100) + "\n");
-    res.write("Key:\n" + clientKey.slice(0, 100) + "\n");
+    res.write("\nCert:\n" + clientCert.slice(0, 100) + "\n");
+    res.write("\nKey:\n" + clientKey.slice(0, 100) + "\n");
     res.end();
 });
 
